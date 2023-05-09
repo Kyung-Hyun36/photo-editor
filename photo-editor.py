@@ -228,5 +228,9 @@ bright_button.pack(pady=10)
 save_button = tk.Button(button_frame, text="이미지 저장하기", command=save_image)
 save_button.pack(pady=10)
 
+save_button2 = tk.Button(button_frame, text="이미지 저장하기", command=save_image)
+save_button2.pack(pady=10)
+
+
 # 윈도우 실행
 win.mainloop()
