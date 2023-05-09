@@ -1,8 +1,22 @@
 import tkinter as tk
+import tkinter.font
 from tkinter import filedialog
 import numpy as np
 from PIL import Image, ImageTk
 import cv2
+
+
+def resize_image(image, max_size):
+    width, height = image.size
+    if width > height:
+        ratio = max_size / width
+        new_width = max_size
+        new_height = int(height * ratio)
+    else:
+        ratio = max_size / height
+        new_height = max_size
+        new_width = int(width * ratio)
+    return image.resize((new_width, new_height))
 
 
 def load_image():
@@ -19,7 +33,7 @@ def load_image():
         image = Image.open(image_path)
 
         # 이미지 리사이즈
-        max_size = 800
+        max_size = 600
         resized_image = resize_image(image, max_size)
 
         # 기존 레이어 삭제
@@ -40,19 +54,6 @@ def load_image():
         return file_path
 
 
-def resize_image(image, max_size):
-    width, height = image.size
-    if width > height:
-        ratio = max_size / width
-        new_width = max_size
-        new_height = int(height * ratio)
-    else:
-        ratio = max_size / height
-        new_height = max_size
-        new_width = int(width * ratio)
-    return image.resize((new_width, new_height))
-
-
 def rotate_CCW():
     global image_tk, layer_ids, current_image
     # 현재 이미지 가져오기
@@ -63,7 +64,7 @@ def rotate_CCW():
     rotated_image = image.rotate(angle)
 
     # 이미지 리사이즈
-    max_size = 800
+    max_size = 600
     resized_image = resize_image(rotated_image, max_size)
 
     # 모든 이미지 레이어 삭제
@@ -91,7 +92,7 @@ def rotate_CW():
     rotated_image = image.rotate(angle)
 
     # 이미지 리사이즈
-    max_size = 800
+    max_size = 600
     resized_image = resize_image(rotated_image, max_size)
 
     # 모든 이미지 레이어 삭제
@@ -123,7 +124,7 @@ def decrease_brightness():
         dark_button.configure(state='disabled')
 
     # 이미지 리사이즈
-    max_size = 800
+    max_size = 600
     resized_image = resize_image(Image.fromarray(image), max_size)
 
     # 모든 이미지 레이어 삭제
@@ -155,7 +156,7 @@ def increase_brightness():
         bright_button.configure(state='disabled')
 
     # 이미지 리사이즈
-    max_size = 800
+    max_size = 600
     resized_image = resize_image(Image.fromarray(image), max_size)
 
     # 모든 이미지 레이어 삭제
@@ -189,7 +190,8 @@ def save_image():
 
 # tkinter 윈도우 생성
 win = tk.Tk()
-win.geometry("1200x800")  # 윈도우 크기 수정
+win.title("Photo Editor")
+win.geometry("1200x600")  # 윈도우 크기 수정
 
 image_path = None
 image_tk = None
@@ -197,39 +199,66 @@ layer_ids = []
 current_image = None
 
 # 좌측 프레임: 이미지 표시
-image_frame = tk.Frame(win, width=800, height=800)
+image_frame = tk.Frame(win, width=600, height=600)
 image_frame.pack(side="left")
 
 # 우측 프레임: 버튼
-button_frame = tk.Frame(win, width=500, height=500)
-button_frame.pack(side="right")
+button_frame = tk.Frame(win, width=600, height=600)
+button_frame.pack(side="left")
 
 # 이미지 캔버스 생성
-canvas = tk.Canvas(image_frame, width=800, height=800, bg="white")
+canvas = tk.Canvas(image_frame, width=600, height=600, bg="white")
 canvas.pack(side="left", padx=10, pady=10)
 
 # 버튼 생성
-load_button = tk.Button(button_frame, text="이미지 불러오기", command=load_image)
-load_button.pack(pady=10)
+font = tkinter.font.Font(family="맑은 고딕", size=15, weight="bold")
 
-rotate_CW_button = tk.Button(button_frame, text="시계방향 회전", command=rotate_CW)
-rotate_CW_button.pack(pady=10)
+load_frame = tk.Frame(button_frame)
+icon_load = ImageTk.PhotoImage(resize_image(Image.open("icon\\icon_load.png"), 80))
+load_button = tk.Button(load_frame, image=icon_load, command=load_image)
+load_button.grid(row=0, column=0)
+load_label = tk.Label(load_frame, text="File Load", font=font)
+load_label.grid(row=1, column=0)
+load_frame.grid(row=0, column=0)
 
-rotate_CCW_button = tk.Button(button_frame, text="반시계방향 회전", command=rotate_CCW)
-rotate_CCW_button.pack(pady=10)
+save_frame = tk.Frame(button_frame)
+icon_save = ImageTk.PhotoImage(resize_image(Image.open("icon\\icon_save.png"), 80))
+save_button = tk.Button(save_frame, image=icon_save, command=save_image)
+save_button.grid(row=0, column=0)
+save_label = tk.Label(save_frame, text="File Save", font=font)
+save_label.grid(row=1, column=0)
+save_frame.grid(row=0, column=1)
 
-dark_button = tk.Button(button_frame, text="밝기 감소", command=decrease_brightness)
-dark_button.pack(pady=10)
+CW_frame = tk.Frame(button_frame)
+icon_CW = ImageTk.PhotoImage(resize_image(Image.open("icon\\icon_rotateCW.png"), 80))
+rotate_CW_button = tk.Button(CW_frame, image=icon_CW, command=rotate_CW)
+rotate_CW_button.grid(row=0, column=0)
+CW_label = tk.Label(CW_frame, text="Rotate CW", font=font)
+CW_label.grid(row=1, column=0)
+CW_frame.grid(row=1, column=0)
 
-bright_button = tk.Button(button_frame, text="밝기 증가", command=increase_brightness)
-bright_button.pack(pady=10)
+CCW_frame = tk.Frame(button_frame)
+icon_CCW = ImageTk.PhotoImage(resize_image(Image.open("icon\\icon_rotateCCW.png"), 80))
+rotate_CCW_button = tk.Button(CCW_frame, image=icon_CCW, command=rotate_CCW)
+rotate_CCW_button.grid(row=0, column=0)
+CCW_label = tk.Label(CCW_frame, text="Rotate CCW", font=font)
+CCW_label.grid(row=1, column=0)
+CCW_frame.grid(row=1, column=1)
 
-save_button = tk.Button(button_frame, text="이미지 저장하기", command=save_image)
-save_button.pack(pady=10)
+dark_frame = tk.Frame(button_frame)
+icon_brightness = ImageTk.PhotoImage(resize_image(Image.open("icon\\icon_brightness.png"), 80))
+dark_button = tk.Button(dark_frame, image=icon_brightness, command=decrease_brightness)
+dark_button.grid(row=0, column=0)
+dark_label = tk.Label(dark_frame, text="Brightness", font=font)
+dark_label.grid(row=1, column=0)
+dark_frame.grid(row=2, column=0)
 
-save_button2 = tk.Button(button_frame, text="이미지 저장하기", command=save_image)
-save_button2.pack(pady=10)
-
+bright_frame = tk.Frame(button_frame)
+bright_button = tk.Button(bright_frame, image=icon_brightness, command=increase_brightness)
+bright_button.grid(row=0, column=0)
+bright_label = tk.Label(bright_frame, text="Brightness", font=font)
+bright_label.grid(row=1, column=0)
+bright_frame.grid(row=2, column=1)
 
 # 윈도우 실행
 win.mainloop()
