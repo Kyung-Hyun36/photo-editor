@@ -6,11 +6,11 @@ import cv2
 
 
 def load_image():
-    global canvas, image_path, image_tk, image_layers, layer_ids, current_image
+    global image_path, image_tk, layer_ids, current_image
     # 이미지 파일 선택 대화상자 열기
     file_path = filedialog.askopenfilename(
         title="이미지 파일 선택",
-        filetypes=(("JPEG 파일", "*.jpg"), ("PNG 파일", "*.png"))
+        filetypes=(("PNG 파일", "*.png"), ("JPEG 파일", "*.jpg"))
     )
 
     if file_path:
@@ -27,12 +27,7 @@ def load_image():
             for layer_id in layer_ids:
                 canvas.delete("all")
 
-        # 이미지를 표시할 캔버스 생성
-        canvas = tk.Canvas(image_frame, width=800, height=800, bg="white")
-        canvas.config(width=800, height=800)
-        canvas.pack(side="left", padx=10, pady=10)
-
-        # 이미지를 캔버스에 표시
+        # 캔버스에 이미지 표시
         image_tk = ImageTk.PhotoImage(resized_image)
         image_layer = canvas.create_image(0, 0, anchor="nw", image=image_tk)
 
@@ -202,12 +197,16 @@ layer_ids = []
 current_image = None
 
 # 좌측 프레임: 이미지 표시
-image_frame = tk.Frame(win, width=500, height=500)
+image_frame = tk.Frame(win, width=800, height=800)
 image_frame.pack(side="left")
 
 # 우측 프레임: 버튼
 button_frame = tk.Frame(win, width=500, height=500)
 button_frame.pack(side="right")
+
+# 이미지 캔버스 생성
+canvas = tk.Canvas(image_frame, width=800, height=800, bg="white")
+canvas.pack(side="left", padx=10, pady=10)
 
 # 버튼 생성
 load_button = tk.Button(button_frame, text="이미지 불러오기", command=load_image)
