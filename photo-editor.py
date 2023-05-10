@@ -189,9 +189,9 @@ def save_image():
 
 
 # tkinter 윈도우 생성
-win = tk.Tk()
-win.title("Photo Editor")
-win.geometry("1200x600")  # 윈도우 크기 수정
+win_main = tk.Tk()
+win_main.title("Photo Editor")
+win_main.geometry("1200x600")  # 윈도우 크기 수정
 
 image_path = None
 image_tk = None
@@ -199,11 +199,11 @@ layer_ids = []
 current_image = None
 
 # 좌측 프레임: 이미지 표시
-image_frame = tk.Frame(win, width=600, height=600)
+image_frame = tk.Frame(win_main, width=600, height=600)
 image_frame.pack(side="left")
 
 # 우측 프레임: 버튼
-button_frame = tk.Frame(win, width=600, height=600)
+button_frame = tk.Frame(win_main, width=600, height=600)
 button_frame.pack(side="left")
 
 # 이미지 캔버스 생성
@@ -261,4 +261,4 @@ bright_label.grid(row=1, column=0)
 bright_frame.grid(row=2, column=1)
 
 # 윈도우 실행
-win.mainloop()
+win_main.mainloop()
