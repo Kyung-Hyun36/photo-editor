@@ -19,6 +19,7 @@ def resize_image(image, max_size):
     return image.resize((new_width, new_height))
 
 
+
 def load_image():
     global image_path, image_tk, layer_ids, current_image
     # 이미지 파일 선택 대화상자 열기
@@ -120,8 +121,6 @@ def decrease_brightness():
     image[:, :, 2] -= 5
     image[:, :, 2] = np.clip(image[:, :, 2], 1, 255)  # v값 255 이상일 경우 최대값인 255로 고정
     image = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
-    if np.all(image[:, :, 2] <= 1):
-        dark_button.configure(state='disabled')
 
     # 이미지 리사이즈
     max_size = 600
@@ -152,8 +151,6 @@ def increase_brightness():
     image[:, :, 2] += 5
     image[:, :, 2] = np.clip(image[:, :, 2], 1, 255)  # v값 255 이상일 경우 최대값인 255로 고정
     image = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
-    if np.all(image[:, :, 2] >= 255):
-        bright_button.configure(state='disabled')
 
     # 이미지 리사이즈
     max_size = 600
