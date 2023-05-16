@@ -8,6 +8,8 @@ import cv2
 
 def resize_image(image, max_size):
     width, height = image.size
+    if width == 0 or height == 0:
+        return image
     if width > height:
         ratio = max_size / width
         new_width = max_size
@@ -19,9 +21,8 @@ def resize_image(image, max_size):
     return image.resize((new_width, new_height))
 
 
-
 def load_image():
-    global image_path, image_tk, layer_ids, current_image
+    global image_path, image_tk, layer_ids, current_image, image_size
     # 이미지 파일 선택 대화상자 열기
     file_path = filedialog.askopenfilename(
         title="이미지 파일 선택",
@@ -36,6 +37,7 @@ def load_image():
         # 이미지 리사이즈
         max_size = 600
         resized_image = resize_image(image, max_size)
+        image_size = resized_image.size
 
         # 기존 레이어 삭제
         if layer_ids:
@@ -53,6 +55,94 @@ def load_image():
         current_image = resized_image
 
         return file_path
+
+
+def mouse_event(canvas, event):
+    if event:
+        x = event.x
+        y = event.y
+    else:
+        x = canvas.winfo_pointerx() - canvas.winfo_rootx()
+        y = canvas.winfo_pointery() - canvas.winfo_rooty()
+    return x, y
+
+
+
+def mouse_click(event):
+    global start_x, start_y
+    # 클릭된 좌표를 저장합니다.
+    start_x, start_y = event.x, event.y
+
+
+def check_cursor_position(event, canvas):
+    if event:
+        x, y = mouse_event(canvas, event)
+    else:
+        x, y = mouse_event(canvas, None)
+
+    edge_left = 5
+    edge_right = image_size[0] + 5
+    edge_top = 5
+    edge_bottom = image_size[1] + 5
+
+    # 마우스 커서가 가장자리에 닿았는지 확인합니다.
+    if edge_left < x < edge_right and edge_top < y < edge_bottom:
+        canvas.config(cursor="")  # 가장자리에 닿았을 때의 커서 모양을 변경합니다.
+    else:
+        canvas.config(cursor="sizing")  # 가장자리를 벗어났을 때의 커서 모양을 원래대로 돌려놓습니다.
+
+
+def crop_image():
+    global current_image, image_tk, layer_ids, start_x, start_y, end_x, end_y
+    # 이미지의 좌표 시스템은 tkinter의 캔버스와 다르므로,
+    # 캔버스에서 얻은 좌표를 이미지의 좌표로 변환합니다.
+    start_x = int(start_x * (current_image.width / canvas.winfo_width()))
+    start_y = int(start_y * (current_image.height / canvas.winfo_height()))
+    end_x = int(end_x * (current_image.width / canvas.winfo_width()))
+    end_y = int(end_y * (current_image.height / canvas.winfo_height()))
+
+    # 좌표 순서가 올바르지 않으면 교환합니다.
+    if end_x < start_x:
+        start_x, end_x = end_x, start_x
+    if end_y < start_y:
+        start_y, end_y = end_y, start_y
+
+    # 이미지를 자르고, 새로운 이미지로 업데이트합니다.
+    current_image = current_image.crop((start_x, start_y, end_x, end_y))
+    max_size = 600
+    resized_image = resize_image(current_image, max_size)
+
+    # 모든 이미지 레이어 삭제
+    for layer_id in layer_ids:
+        canvas.delete(layer_id)
+
+    # 새로운 이미지 레이어 추가
+    image_tk = ImageTk.PhotoImage(resized_image)
+    image_layer = canvas.create_image(0, 0, anchor="nw", image=image_tk)
+
+    # 레이어 ID 업데이트
+    layer_ids = [image_layer]
+
+    # 현재 이미지 업데이트
+    current_image = resized_image
+    check_cursor_position(None)
+    mouse_event(None)
+
+
+def mouse_release(event):
+    global start_x, start_y, end_x, end_y
+    if event:
+        end_x, end_y = event.x, event.y
+    else:
+        x, y = mouse_event(None)
+        event = tk.Event()
+        event.x = x
+        event.y = y
+
+    # 이미지를 자릅니다.
+    if start_x is not None and start_y is not None and end_x is not None and end_y is not None:
+        crop_image()
+        check_cursor_position(event, canvas)  # crop_image() 실행 후에 check_cursor_position() 함수 호출
 
 
 def rotate_CCW():
@@ -188,12 +278,13 @@ def save_image():
 # tkinter 윈도우 생성
 win_main = tk.Tk()
 win_main.title("Photo Editor")
-win_main.geometry("1200x600")  # 윈도우 크기 수정
+win_main.geometry("1200x700")  # 윈도우 크기 수정
 
 image_path = None
 image_tk = None
 layer_ids = []
 current_image = None
+start_x, start_y = None, None
 
 # 좌측 프레임: 이미지 표시
 image_frame = tk.Frame(win_main, width=600, height=600)
@@ -206,6 +297,12 @@ button_frame.pack(side="left")
 # 이미지 캔버스 생성
 canvas = tk.Canvas(image_frame, width=600, height=600, bg="white")
 canvas.pack(side="left", padx=10, pady=10)
+
+# 마우스 이벤트를 바인드
+canvas.bind("<Motion>", lambda event: check_cursor_position(event, canvas))
+canvas.bind("<Button-1>", mouse_click)
+canvas.bind("<ButtonRelease-1>", mouse_release)
+
 
 # 버튼 생성
 font = tkinter.font.Font(family="맑은 고딕", size=15, weight="bold")
@@ -259,7 +356,7 @@ bright_frame.grid(row=2, column=1)
 
 cut_frame = tk.Frame(button_frame)
 icon_cut = ImageTk.PhotoImage(resize_image(Image.open("icon//icon_cut.png"), 80))
-cut_button = tk.Button(cut_frame, image=icon_cut, command=increase_brightness)
+cut_button = tk.Button(cut_frame, image=icon_cut, command=lambda: mouse_release(None))
 cut_button.grid(row=0, column=0)
 cut_label = tk.Label(cut_frame, text="Cut", font=font)
 cut_label.grid(row=1, column=0)
