@@ -260,5 +260,21 @@ bright_label = tk.Label(bright_frame, text="Brightness", font=font)
 bright_label.grid(row=1, column=0)
 bright_frame.grid(row=2, column=1)
 
+cut_frame = tk.Frame(button_frame)
+icon_cut = ImageTk.PhotoImage(resize_image(Image.open("icon//icon_cut.png"), 80))
+cut_button = tk.Button(cut_frame, image=icon_cut, command=increase_brightness)
+cut_button.grid(row=0, column=0)
+cut_label = tk.Label(cut_frame, text="Cut", font=font)
+cut_label.grid(row=1, column=0)
+cut_frame.grid(row=3, column=0)
+
+undo_frame = tk.Frame(button_frame)
+icon_undo = ImageTk.PhotoImage(resize_image(Image.open("icon//icon_undo.png"), 80))
+undo_button = tk.Button(undo_frame, image=icon_undo, command=increase_brightness)
+undo_button.grid(row=0, column=0)
+undo_label = tk.Label(undo_frame, text="Undo", font=font)
+undo_label.grid(row=1, column=0)
+undo_frame.grid(row=3, column=1)
+
 # 윈도우 실행
 win_main.mainloop()
