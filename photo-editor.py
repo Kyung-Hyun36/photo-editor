@@ -7,6 +7,7 @@ import cv2
 
 
 def resize_image(image, max_size):
+    # 프레임 크기에 맞게 이미지 사이즈 재조정
     width, height = image.size
     if width == 0 or height == 0:
         return image
@@ -22,7 +23,8 @@ def resize_image(image, max_size):
 
 
 def load_image():
-    global image_path, image_tk, layer_ids, current_image, image_size
+    global image_path
+
     # 이미지 파일 선택 대화상자 열기
     file_path = filedialog.askopenfilename(
         title="이미지 파일 선택",
@@ -33,28 +35,57 @@ def load_image():
         # 이미지 불러오기
         image_path = file_path
         image = Image.open(image_path)
-
-        # 이미지 리사이즈
-        max_size = 600
-        resized_image = resize_image(image, max_size)
-        image_size = resized_image.size
-
-        # 기존 레이어 삭제
-        if layer_ids:
-            for layer_id in layer_ids:
-                canvas.delete("all")
-
-        # 캔버스에 이미지 표시
-        image_tk = ImageTk.PhotoImage(resized_image)
-        image_layer = canvas.create_image(0, 0, anchor="nw", image=image_tk)
-
-        # 레이어 ID 저장
-        layer_ids = [image_layer]
-
-        # 현재 이미지 업데이트
-        current_image = resized_image
+        update_image(image)
 
         return file_path
+
+
+def update_image(new_image):
+    global image_tk, layer_ids, current_image, image_size
+
+    # 이미지 리사이즈
+    max_size = 600
+    resized_image = resize_image(new_image, max_size)
+    image_size = resized_image.size
+
+    # 모든 이미지 레이어 삭제
+    for layer_id in layer_ids:
+        canvas.delete(layer_id)
+
+    # 새로운 이미지 레이어 추가
+    image_tk = ImageTk.PhotoImage(resized_image)
+    image_layer = canvas.create_image(0, 0, anchor="nw", image=image_tk)
+
+    # 레이어 ID 업데이트
+    layer_ids = [image_layer]
+
+    # 현재 이미지 업데이트
+    current_image = resized_image
+
+    # 작업 이력에 현재 이미지 추가
+    undo_history.append(current_image.copy())
+
+
+def undo():
+    global image_tk, layer_ids, current_image, undo_history
+    if len(undo_history) >= 2:
+        # 이전 작업 단계의 이미지 가져오기
+        previous_image = undo_history[-2]
+
+        # 현재 이미지 업데이트
+        current_image = previous_image
+        max_size = 600
+        resized_image = resize_image(current_image, max_size)
+        for layer_id in layer_ids:
+            canvas.delete(layer_id)
+        image_tk = ImageTk.PhotoImage(resized_image)
+        image_layer = canvas.create_image(0, 0, anchor="nw", image=image_tk)
+        layer_ids = [image_layer]
+        current_image = resized_image
+
+        # 현재 작업 단계를 undo_history에서 제거
+        undo_history.pop()
+# ...
 
 
 def mouse_event(canvas, event):
@@ -153,24 +184,7 @@ def rotate_CCW():
     # 이미지 회전
     angle = 90
     rotated_image = image.rotate(angle)
-
-    # 이미지 리사이즈
-    max_size = 600
-    resized_image = resize_image(rotated_image, max_size)
-
-    # 모든 이미지 레이어 삭제
-    for layer_id in layer_ids:
-        canvas.delete(layer_id)
-
-    # 새로운 이미지 레이어 추가
-    image_tk = ImageTk.PhotoImage(resized_image)
-    image_layer = canvas.create_image(0, 0, anchor="nw", image=image_tk)
-
-    # 레이어 ID 업데이트
-    layer_ids = [image_layer]
-
-    # 현재 이미지 업데이트
-    current_image = resized_image
+    update_image(rotated_image)
 
 
 def rotate_CW():
@@ -181,24 +195,7 @@ def rotate_CW():
     # 이미지 회전
     angle = -90
     rotated_image = image.rotate(angle)
-
-    # 이미지 리사이즈
-    max_size = 600
-    resized_image = resize_image(rotated_image, max_size)
-
-    # 모든 이미지 레이어 삭제
-    for layer_id in layer_ids:
-        canvas.delete(layer_id)
-
-    # 새로운 이미지 레이어 추가
-    image_tk = ImageTk.PhotoImage(resized_image)
-    image_layer = canvas.create_image(0, 0, anchor="nw", image=image_tk)
-
-    # 레이어 ID 업데이트
-    layer_ids = [image_layer]
-
-    # 현재 이미지 업데이트
-    current_image = resized_image
+    update_image(rotated_image)
 
 
 def decrease_brightness():
@@ -211,24 +208,7 @@ def decrease_brightness():
     image[:, :, 2] -= 5
     image[:, :, 2] = np.clip(image[:, :, 2], 1, 255)  # v값 255 이상일 경우 최대값인 255로 고정
     image = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
-
-    # 이미지 리사이즈
-    max_size = 600
-    resized_image = resize_image(Image.fromarray(image), max_size)
-
-    # 모든 이미지 레이어 삭제
-    for layer_id in layer_ids:
-        canvas.delete(layer_id)
-
-    # 새로운 이미지 레이어 추가
-    image_tk = ImageTk.PhotoImage(resized_image)
-    image_layer = canvas.create_image(0, 0, anchor="nw", image=image_tk)
-
-    # 레이어 ID 업데이트
-    layer_ids = [image_layer]
-
-    # 현재 이미지 업데이트
-    current_image = resized_image
+    update_image(Image.fromarray(image))
 
 
 def increase_brightness():
@@ -241,24 +221,7 @@ def increase_brightness():
     image[:, :, 2] += 5
     image[:, :, 2] = np.clip(image[:, :, 2], 1, 255)  # v값 255 이상일 경우 최대값인 255로 고정
     image = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
-
-    # 이미지 리사이즈
-    max_size = 600
-    resized_image = resize_image(Image.fromarray(image), max_size)
-
-    # 모든 이미지 레이어 삭제
-    for layer_id in layer_ids:
-        canvas.delete(layer_id)
-
-    # 새로운 이미지 레이어 추가
-    image_tk = ImageTk.PhotoImage(resized_image)
-    image_layer = canvas.create_image(0, 0, anchor="nw", image=image_tk)
-
-    # 레이어 ID 업데이트
-    layer_ids = [image_layer]
-
-    # 현재 이미지 업데이트
-    current_image = resized_image
+    update_image(Image.fromarray(image))
 
 
 def save_image():
@@ -282,8 +245,10 @@ win_main.geometry("1200x700")  # 윈도우 크기 수정
 
 image_path = None
 image_tk = None
+image_size = (0, 0)
 layer_ids = []
 current_image = None
+undo_history = []
 start_x, start_y = None, None
 
 # 좌측 프레임: 이미지 표시
@@ -364,7 +329,7 @@ cut_frame.grid(row=3, column=0)
 
 undo_frame = tk.Frame(button_frame)
 icon_undo = ImageTk.PhotoImage(resize_image(Image.open("icon//icon_undo.png"), 80))
-undo_button = tk.Button(undo_frame, image=icon_undo, command=increase_brightness)
+undo_button = tk.Button(undo_frame, image=icon_undo, command=undo)
 undo_button.grid(row=0, column=0)
 undo_label = tk.Label(undo_frame, text="Undo", font=font)
 undo_label.grid(row=1, column=0)
