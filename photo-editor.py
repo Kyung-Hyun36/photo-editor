@@ -225,17 +225,41 @@ def increase_brightness():
 
 
 def save_image():
-    global current_image, image_path
-
+    global current_image, image_path, convert
     # 파일 형식 얻기
-    file_format = image_path.split('.')[-1].lower()
+    if convert < 1:
+        file_format = image_path.split('.')[-1].lower()
+    else:
+        file_format = convert_path.split('.')[-1].lower()
 
     # 파일 저장 경로 및 이름 설정
     save_path = filedialog.asksaveasfilename(defaultextension=f'.{file_format}')
     if not save_path:
         return
+    # RGBA to RGB if necessary
+    if current_image.mode in ("RGBA", "P"):
+        background = Image.new("RGB", current_image.size, (255, 255, 255))
+        background.paste(current_image, mask=current_image.split()[3])  # 3 is the alpha channel
+        current_image = background
     # 이미지 저장
     current_image.save(save_path)
+
+
+def path_convert():
+    global current_image, image_path, convert, convert_path
+
+    # 파일 형식 얻기
+    file_format = image_path.split('.')[-1].lower()
+
+    if file_format == "png":
+        # 파일 경로에서 .png 제거 후 .jpg 추가
+        convert_path = image_path.rsplit('.', 1)[0] + '.jpg'
+        convert = 1
+    elif file_format == "jpg":
+        # 파일 경로에서 .jpg 제거 후 .png 추가
+        convert_path = image_path.rsplit('.', 1)[0] + '.png'
+        convert = 1
+
 
 
 # tkinter 윈도우 생성
@@ -250,6 +274,7 @@ layer_ids = []
 current_image = None
 undo_history = []
 start_x, start_y = None, None
+convert = 0
 
 # 좌측 프레임: 이미지 표시
 image_frame = tk.Frame(win_main, width=600, height=600)
@@ -308,7 +333,7 @@ dark_frame = tk.Frame(button_frame)
 icon_brightness = ImageTk.PhotoImage(resize_image(Image.open("icon//icon_brightness.png"), 80))
 dark_button = tk.Button(dark_frame, image=icon_brightness, command=decrease_brightness)
 dark_button.grid(row=0, column=0)
-dark_label = tk.Label(dark_frame, text="Brightness", font=font)
+dark_label = tk.Label(dark_frame, text="Darkness", font=font)
 dark_label.grid(row=1, column=0)
 dark_frame.grid(row=2, column=0)
 
@@ -334,6 +359,38 @@ undo_button.grid(row=0, column=0)
 undo_label = tk.Label(undo_frame, text="Undo", font=font)
 undo_label.grid(row=1, column=0)
 undo_frame.grid(row=3, column=1)
+
+add_frame = tk.Frame(button_frame)
+icon_add = ImageTk.PhotoImage(resize_image(Image.open("icon//icon_add.png"), 80))
+add_button = tk.Button(add_frame, image=icon_add, command=undo)
+add_button.grid(row=0, column=0)
+add_label = tk.Label(add_frame, text="add", font=font)
+add_label.grid(row=1, column=0)
+add_frame.grid(row=0, column=2)
+
+bg_remove_frame = tk.Frame(button_frame)
+icon_bg_remove = ImageTk.PhotoImage(resize_image(Image.open("icon//icon_bg_remove.png"), 80))
+bg_remove_button = tk.Button(bg_remove_frame, image=icon_bg_remove, command=undo)
+bg_remove_button.grid(row=0, column=0)
+bg_remove_label = tk.Label(bg_remove_frame, text="bg_remove", font=font)
+bg_remove_label.grid(row=1, column=0)
+bg_remove_frame.grid(row=1, column=2)
+
+blur_frame = tk.Frame(button_frame)
+icon_blur = ImageTk.PhotoImage(resize_image(Image.open("icon//icon_blur.png"), 80))
+blur_button = tk.Button(blur_frame, image=icon_blur, command=undo)
+blur_button.grid(row=0, column=0)
+blur_label = tk.Label(blur_frame, text="blur", font=font)
+blur_label.grid(row=1, column=0)
+blur_frame.grid(row=2, column=2)
+
+convert_frame = tk.Frame(button_frame)
+icon_convert = ImageTk.PhotoImage(resize_image(Image.open("icon//icon_convert.png"), 80))
+convert_button = tk.Button(convert_frame, image=icon_convert, command=path_convert)
+convert_button.grid(row=0, column=0)
+convert_label = tk.Label(convert_frame, text="convert", font=font)
+convert_label.grid(row=1, column=0)
+convert_frame.grid(row=2, column=2)
 
 # 윈도우 실행
 win_main.mainloop()
