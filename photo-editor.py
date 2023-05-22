@@ -261,6 +261,23 @@ def path_convert():
         convert = 1
 
 
+def create_button(root, icon_path, icon_name, command, row, column):
+    self_frame = tk.Frame(root)
+    self_frame.grid(row=row, column=column)
+
+    # 이미지 로드
+    image = resize_image(Image.open(icon_path), 80)
+    icon = ImageTk.PhotoImage(image)
+
+    # 버튼 생성
+    button = tk.Button(self_frame, image=icon, command=command)
+    button.image = icon  # 사진에 대한 참조 유지
+    button.grid(row=0, column=0)
+
+    # 라벨 생성
+    label = tk.Label(self_frame, text=icon_name, font=font)
+    label.grid(row=1, column=0)
+
 
 # tkinter 윈도우 생성
 win_main = tk.Tk()
@@ -297,100 +314,18 @@ canvas.bind("<ButtonRelease-1>", mouse_release)
 # 버튼 생성
 font = tkinter.font.Font(family="맑은 고딕", size=15, weight="bold")
 
-load_frame = tk.Frame(button_frame)
-icon_load = ImageTk.PhotoImage(resize_image(Image.open("icon//icon_load.png"), 80))
-load_button = tk.Button(load_frame, image=icon_load, command=load_image)
-load_button.grid(row=0, column=0)
-load_label = tk.Label(load_frame, text="File Load", font=font)
-load_label.grid(row=1, column=0)
-load_frame.grid(row=0, column=0)
-
-save_frame = tk.Frame(button_frame)
-icon_save = ImageTk.PhotoImage(resize_image(Image.open("icon//icon_save.png"), 80))
-save_button = tk.Button(save_frame, image=icon_save, command=save_image)
-save_button.grid(row=0, column=0)
-save_label = tk.Label(save_frame, text="File Save", font=font)
-save_label.grid(row=1, column=0)
-save_frame.grid(row=0, column=1)
-
-CW_frame = tk.Frame(button_frame)
-icon_CW = ImageTk.PhotoImage(resize_image(Image.open("icon//icon_rotateCW.png"), 80))
-rotate_CW_button = tk.Button(CW_frame, image=icon_CW, command=rotate_CW)
-rotate_CW_button.grid(row=0, column=0)
-CW_label = tk.Label(CW_frame, text="Rotate CW", font=font)
-CW_label.grid(row=1, column=0)
-CW_frame.grid(row=1, column=0)
-
-CCW_frame = tk.Frame(button_frame)
-icon_CCW = ImageTk.PhotoImage(resize_image(Image.open("icon//icon_rotateCCW.png"), 80))
-rotate_CCW_button = tk.Button(CCW_frame, image=icon_CCW, command=rotate_CCW)
-rotate_CCW_button.grid(row=0, column=0)
-CCW_label = tk.Label(CCW_frame, text="Rotate CCW", font=font)
-CCW_label.grid(row=1, column=0)
-CCW_frame.grid(row=1, column=1)
-
-dark_frame = tk.Frame(button_frame)
-icon_brightness = ImageTk.PhotoImage(resize_image(Image.open("icon//icon_brightness.png"), 80))
-dark_button = tk.Button(dark_frame, image=icon_brightness, command=decrease_brightness)
-dark_button.grid(row=0, column=0)
-dark_label = tk.Label(dark_frame, text="Darkness", font=font)
-dark_label.grid(row=1, column=0)
-dark_frame.grid(row=2, column=0)
-
-bright_frame = tk.Frame(button_frame)
-bright_button = tk.Button(bright_frame, image=icon_brightness, command=increase_brightness)
-bright_button.grid(row=0, column=0)
-bright_label = tk.Label(bright_frame, text="Brightness", font=font)
-bright_label.grid(row=1, column=0)
-bright_frame.grid(row=2, column=1)
-
-cut_frame = tk.Frame(button_frame)
-icon_cut = ImageTk.PhotoImage(resize_image(Image.open("icon//icon_cut.png"), 80))
-cut_button = tk.Button(cut_frame, image=icon_cut, command=lambda: mouse_release(None))
-cut_button.grid(row=0, column=0)
-cut_label = tk.Label(cut_frame, text="Cut", font=font)
-cut_label.grid(row=1, column=0)
-cut_frame.grid(row=3, column=0)
-
-undo_frame = tk.Frame(button_frame)
-icon_undo = ImageTk.PhotoImage(resize_image(Image.open("icon//icon_undo.png"), 80))
-undo_button = tk.Button(undo_frame, image=icon_undo, command=undo)
-undo_button.grid(row=0, column=0)
-undo_label = tk.Label(undo_frame, text="Undo", font=font)
-undo_label.grid(row=1, column=0)
-undo_frame.grid(row=3, column=1)
-
-add_frame = tk.Frame(button_frame)
-icon_add = ImageTk.PhotoImage(resize_image(Image.open("icon//icon_add.png"), 80))
-add_button = tk.Button(add_frame, image=icon_add, command=undo)
-add_button.grid(row=0, column=0)
-add_label = tk.Label(add_frame, text="add", font=font)
-add_label.grid(row=1, column=0)
-add_frame.grid(row=0, column=2)
-
-bg_remove_frame = tk.Frame(button_frame)
-icon_bg_remove = ImageTk.PhotoImage(resize_image(Image.open("icon//icon_bg_remove.png"), 80))
-bg_remove_button = tk.Button(bg_remove_frame, image=icon_bg_remove, command=undo)
-bg_remove_button.grid(row=0, column=0)
-bg_remove_label = tk.Label(bg_remove_frame, text="bg_remove", font=font)
-bg_remove_label.grid(row=1, column=0)
-bg_remove_frame.grid(row=1, column=2)
-
-blur_frame = tk.Frame(button_frame)
-icon_blur = ImageTk.PhotoImage(resize_image(Image.open("icon//icon_blur.png"), 80))
-blur_button = tk.Button(blur_frame, image=icon_blur, command=undo)
-blur_button.grid(row=0, column=0)
-blur_label = tk.Label(blur_frame, text="blur", font=font)
-blur_label.grid(row=1, column=0)
-blur_frame.grid(row=2, column=2)
-
-convert_frame = tk.Frame(button_frame)
-icon_convert = ImageTk.PhotoImage(resize_image(Image.open("icon//icon_convert.png"), 80))
-convert_button = tk.Button(convert_frame, image=icon_convert, command=path_convert)
-convert_button.grid(row=0, column=0)
-convert_label = tk.Label(convert_frame, text="convert", font=font)
-convert_label.grid(row=1, column=0)
-convert_frame.grid(row=3, column=2)
+create_button(button_frame, "icon//icon_load.png", "File Load", load_image, 0, 0)
+create_button(button_frame, "icon//icon_save.png", "File Save", save_image, 0, 1)
+create_button(button_frame, "icon//icon_add.png", "Add", undo, 0, 2)
+create_button(button_frame, "icon//icon_rotateCW.png", "Rotate CW", rotate_CW, 1, 0)
+create_button(button_frame, "icon//icon_rotateCCW.png", "Rotate CCW", rotate_CCW, 1, 1)
+create_button(button_frame, "icon//icon_removeBG.png", "BG Remove", undo, 1, 2)
+create_button(button_frame, "icon//icon_brightness.png", "Darkness", decrease_brightness, 2, 0)
+create_button(button_frame, "icon//icon_brightness.png", "Brightness", increase_brightness, 2, 1)
+create_button(button_frame, "icon//icon_blur.png", "Blur", undo, 2, 2)
+create_button(button_frame, "icon//icon_cut.png", "Cut", lambda: mouse_release(None), 3, 0)
+create_button(button_frame, "icon//icon_undo.png", "Undo", undo, 3, 1)
+create_button(button_frame, "icon//icon_convert.png", "Convert", path_convert, 3, 2)
 
 # 윈도우 실행
 win_main.mainloop()
