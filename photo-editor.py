@@ -390,7 +390,7 @@ convert_button = tk.Button(convert_frame, image=icon_convert, command=path_conve
 convert_button.grid(row=0, column=0)
 convert_label = tk.Label(convert_frame, text="convert", font=font)
 convert_label.grid(row=1, column=0)
-convert_frame.grid(row=2, column=2)
+convert_frame.grid(row=3, column=2)
 
 # 윈도우 실행
 win_main.mainloop()
