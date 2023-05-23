@@ -9,9 +9,6 @@ PORT = 12345
 
 def signupmain():
     def signup():
-        # 서버에 가입 요청 전송
-        client_socket.send('register'.encode())
-
         id = entry_id.get()
         username = entry_username.get()
         password = entry_password.get()
@@ -23,28 +20,30 @@ def signupmain():
         elif password != confirm_password:
             label_message.config(text="비밀번호가 일치하지 않습니다.", fg="red")
         else:
+            # 서버에 가입 요청 전송
+            client_socket.sendto('signup'.encode(), (HOST, PORT))
 
             # 사용자 정보 전송
-            client_socket.send(id.encode())
-            client_socket.send(username.encode())
-            client_socket.send(password.encode())
-            client_socket.send(version.encode())
+            client_socket.sendto(id.encode(), (HOST, PORT))
+            client_socket.sendto(username.encode(), (HOST, PORT))
+            client_socket.sendto(password.encode(), (HOST, PORT))
+            client_socket.sendto(version.encode(), (HOST, PORT))
 
             # 서버로부터 응답 수신
-            response = client_socket.recv(1024).decode()
-            if response == "회원가입이 완료되었습니다.":
-                client_socket.send('exit'.encode())
+            response, server_address = client_socket.recvfrom(1024)
+            if response.decode() == "회원가입이 완료되었습니다.":
                 win_signup.destroy()
                 login.loginmain()
             else:
-                label_message.config(text=response, fg="red")
+                label_message.config(text=response.decode(), fg="red")
+
+    def on_closing():
+        client_socket.sendto('exit'.encode(), (HOST, PORT))
+        win_signup.destroy()
 
 
     # 소켓 생성
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    # 서버에 연결
-    client_socket.connect((HOST, PORT))
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     # Tkinter 윈도우 생성
     win_signup = tk.Tk()
@@ -95,6 +94,9 @@ def signupmain():
     # 메시지 표시 레이블
     label_message = tk.Label(signup_frame, text="")
     label_message.grid(row=6, columnspan=2, pady=5)
+
+    # 윈도우 종료 시 on_closing 함수 실행
+    win_signup.protocol("WM_DELETE_WINDOW", on_closing)
 
     # Tkinter 이벤트 루프 시작
     win_signup.mainloop()

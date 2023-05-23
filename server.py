@@ -13,72 +13,56 @@ user_database = {
 }
 
 
-def handle_registration(client_socket):
+def handle_signup(client_socket, client_address):
     # 사용자 정보 수신
-    id = client_socket.recv(1024).decode()
-    name = client_socket.recv(1024).decode()
-    password = client_socket.recv(1024).decode()
-    version = client_socket.recv(1024).decode()
+    id, address = client_socket.recvfrom(1024)
+    name, address = client_socket.recvfrom(1024)
+    password, address = client_socket.recvfrom(1024)
+    version, address = client_socket.recvfrom(1024)
 
     # 회원가입 로직
-    if id in user_database:
-        client_socket.send('이미 가입된 사용자입니다.'.encode())
+    if id.decode() in user_database:
+        client_socket.sendto('이미 가입된 사용자입니다.'.encode(), address)
     else:
-        user_database[id] = {
-            'password': password,
-            'name': name,
-            'version': version
+        user_database[id.decode()] = {
+            'password': password.decode(),
+            'name': name.decode(),
+            'version': version.decode()
         }
-        client_socket.send('회원가입이 완료되었습니다.'.encode())
-        print(user_database)
+        client_socket.sendto('회원가입이 완료되었습니다.'.encode(), address)
 
 
-def handle_login(client_socket):
+def handle_login(client_socket, client_address):
     # 사용자명과 비밀번호 수신
-    id = client_socket.recv(1024).decode()
-    password = client_socket.recv(1024).decode()
-    print(id)
-    print(password)
+    id, address = client_socket.recvfrom(1024)
+    password, address = client_socket.recvfrom(1024)
 
     # 로그인 로직
-    if id in user_database and user_database[id]['password'] == password:
+    if id.decode() in user_database and user_database[id.decode()]['password'] == password.decode():
         print("성공")
-        client_socket.send('로그인 성공'.encode())
+        client_socket.sendto('로그인 성공'.encode(), address)
     else:
         print("실패")
-        client_socket.send('로그인 실패'.encode())
+        client_socket.sendto('로그인 실패'.encode(), address)
 
 
 # 소켓 생성
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 # 서버 주소 설정
 server_socket.bind((HOST, PORT))
 
-# 클라이언트 접속 대기
-server_socket.listen()
-
 print(f"서버가 실행되었습니다. {HOST}:{PORT}")
 
 while True:
-    # 클라이언트 접속 수락
-    client_socket, client_address = server_socket.accept()
-    print(f"클라이언트가 접속했습니다. {client_address[0]}:{client_address[1]}")
+    request, client_address = server_socket.recvfrom(1024)
 
-    while True:
-        # 클라이언트로부터 요청 수신
-        request = client_socket.recv(1024).decode()
-        print("request:"+request)
-
-        if request == 'register':
-            handle_registration(client_socket)
-        elif request == 'login':
-            handle_login(client_socket)
-        elif request == 'exit':
-            break
-
-    # 클라이언트 소켓 종료
-    client_socket.close()
+    if request.decode() == 'signup':
+        handle_signup(server_socket, client_address)
+    elif request.decode() == 'login':
+        handle_login(server_socket, client_address)
+    elif request.decode() == "exit":
+        break
 
 # 소켓 종료
 server_socket.close()

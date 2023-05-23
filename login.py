@@ -2,6 +2,7 @@ import tkinter as tk
 import tkinter.font
 import socket
 import signup
+import photoeditor
 
 HOST = "127.0.0.1"
 PORT = 12345
@@ -10,31 +11,38 @@ PORT = 12345
 def loginmain():
     def login():
         # 서버에 로그인 요청 전송
-        client_socket.send('login'.encode())
+        client_socket.sendto('login'.encode(), (HOST, PORT))
 
         username = entry_id.get()
         password = entry_password.get()
 
         # 아이디와 비밀번호 전송
-        client_socket.send(username.encode())
-        client_socket.send(password.encode())
+        client_socket.sendto(username.encode(), (HOST, PORT))
+        client_socket.sendto(password.encode(), (HOST, PORT))
 
         # 서버로부터 응답 수신
-        response = client_socket.recv(1024).decode()
-        print(response)
-
+        response, server_address = client_socket.recvfrom(1024)
+        if response.decode() == "로그인 성공":
+            open_photoeditor()
+        else:
+            label_message.config(text=response.decode(), fg="red")
 
     def open_signup():
-        client_socket.send('exit'.encode())
         win_login.destroy()
         signup.signupmain()
 
 
-    # 소켓 생성
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    def open_photoeditor():
+        win_login.destroy()
+        photoeditor.photoeditormain()
 
-    # 서버에 연결
-    client_socket.connect((HOST, PORT))
+    def on_closing():
+        client_socket.sendto('exit'.encode(), (HOST, PORT))
+        win_login.destroy()
+
+
+    # 소켓 생성
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     # Tkinter 윈도우 생성
     win_login = tk.Tk()
@@ -64,6 +72,13 @@ def loginmain():
     # 회원가입 버튼
     button_signup = tk.Button(login_frame, text="회원가입", command=open_signup)
     button_signup.grid(row=3, columnspan=2, pady=5)
+
+    # 메시지 표시 레이블
+    label_message = tk.Label(login_frame, text="")
+    label_message.grid(row=4, columnspan=2, pady=5)
+
+    # 윈도우 종료 시 on_closing 함수 실행
+    win_login.protocol("WM_DELETE_WINDOW", on_closing)
 
     # Tkinter 이벤트 루프 시작
     win_login.mainloop()
