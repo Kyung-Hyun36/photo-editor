@@ -9,6 +9,10 @@ PORT = 12345
 
 
 def loginmain():
+    def on_closing():
+        client_socket.sendto('exit'.encode(), (HOST, PORT))
+        win_login.destroy()
+
     def login():
         # 서버에 로그인 요청 전송
         client_socket.sendto('login'.encode(), (HOST, PORT))
@@ -31,15 +35,9 @@ def loginmain():
         win_login.destroy()
         signup.signupmain()
 
-
     def open_photoeditor():
         win_login.destroy()
         photoeditor.photoeditormain()
-
-    def on_closing():
-        client_socket.sendto('exit'.encode(), (HOST, PORT))
-        win_login.destroy()
-
 
     # 소켓 생성
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

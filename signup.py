@@ -8,6 +8,10 @@ PORT = 12345
 
 
 def signupmain():
+    def on_closing():
+        win_signup.destroy()
+        login.loginmain()
+
     def signup():
         id = entry_id.get()
         username = entry_username.get()
@@ -36,11 +40,6 @@ def signupmain():
                 login.loginmain()
             else:
                 label_message.config(text=response.decode(), fg="red")
-
-    def on_closing():
-        client_socket.sendto('exit'.encode(), (HOST, PORT))
-        win_signup.destroy()
-
 
     # 소켓 생성
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
