@@ -14,7 +14,7 @@ user_database = {
 
 
 def handle_registration(client_socket):
-    # 사용자명과 비밀번호 수신
+    # 사용자 정보 수신
     id = client_socket.recv(1024).decode()
     name = client_socket.recv(1024).decode()
     password = client_socket.recv(1024).decode()
@@ -37,28 +37,16 @@ def handle_login(client_socket):
     # 사용자명과 비밀번호 수신
     id = client_socket.recv(1024).decode()
     password = client_socket.recv(1024).decode()
+    print(id)
+    print(password)
 
     # 로그인 로직
-    if id in user_database and user_database[id] == password:
+    if id in user_database and user_database[id]['password'] == password:
+        print("성공")
         client_socket.send('로그인 성공'.encode())
     else:
+        print("실패")
         client_socket.send('로그인 실패'.encode())
-
-
-def handle_client(client_socket):
-    while True:
-        # 클라이언트로부터 요청 수신
-        request = client_socket.recv(1024).decode()
-
-        if request == 'register':
-            handle_registration(client_socket)
-        elif request == 'login':
-            handle_login(client_socket)
-        elif request == 'exit':
-            break
-
-    # 클라이언트 소켓 종료
-    client_socket.close()
 
 
 # 소켓 생성
@@ -77,5 +65,20 @@ while True:
     client_socket, client_address = server_socket.accept()
     print(f"클라이언트가 접속했습니다. {client_address[0]}:{client_address[1]}")
 
-    # 클라이언트 요청 처리 함수 호출
-    handle_client(client_socket)
+    while True:
+        # 클라이언트로부터 요청 수신
+        request = client_socket.recv(1024).decode()
+        print("request:"+request)
+
+        if request == 'register':
+            handle_registration(client_socket)
+        elif request == 'login':
+            handle_login(client_socket)
+        elif request == 'exit':
+            break
+
+    # 클라이언트 소켓 종료
+    client_socket.close()
+
+# 소켓 종료
+server_socket.close()
