@@ -6,6 +6,15 @@ from PIL import Image, ImageTk
 import cv2
 import login
 
+image_path = None
+image_tk = None
+image_size = (0, 0)
+layer_ids = []
+current_image = None
+undo_history = []
+start_x, start_y = None, None
+convert = 0
+
 
 def photoeditormain():
     def on_closing():
@@ -27,7 +36,6 @@ def photoeditormain():
             new_width = int(width * ratio)
         return image.resize((new_width, new_height))
 
-
     def load_image():
         global image_path
 
@@ -44,7 +52,6 @@ def photoeditormain():
             update_image(image)
 
             return file_path
-
 
     def update_image(new_image):
         global image_tk, layer_ids, current_image, image_size
@@ -71,7 +78,6 @@ def photoeditormain():
         # 작업 이력에 현재 이미지 추가
         undo_history.append(current_image.copy())
 
-
     def undo():
         global image_tk, layer_ids, current_image, undo_history
         if len(undo_history) >= 2:
@@ -91,8 +97,8 @@ def photoeditormain():
 
             # 현재 작업 단계를 undo_history에서 제거
             undo_history.pop()
-    # ...
 
+    # ...
 
     def mouse_event(canvas, event):
         if event:
@@ -103,13 +109,10 @@ def photoeditormain():
             y = canvas.winfo_pointery() - canvas.winfo_rooty()
         return x, y
 
-
-
     def mouse_click(event):
         global start_x, start_y
         # 클릭된 좌표를 저장합니다.
         start_x, start_y = event.x, event.y
-
 
     def check_cursor_position(event, canvas):
         if event:
@@ -127,7 +130,6 @@ def photoeditormain():
             canvas.config(cursor="")  # 가장자리에 닿았을 때의 커서 모양을 변경합니다.
         else:
             canvas.config(cursor="sizing")  # 가장자리를 벗어났을 때의 커서 모양을 원래대로 돌려놓습니다.
-
 
     def crop_image():
         global current_image, image_tk, layer_ids, start_x, start_y, end_x, end_y
@@ -165,7 +167,6 @@ def photoeditormain():
         check_cursor_position(None)
         mouse_event(None)
 
-
     def mouse_release(event):
         global start_x, start_y, end_x, end_y
         if event:
@@ -181,7 +182,6 @@ def photoeditormain():
             crop_image()
             check_cursor_position(event, canvas)  # crop_image() 실행 후에 check_cursor_position() 함수 호출
 
-
     def rotate_CCW():
         global image_tk, layer_ids, current_image
         # 현재 이미지 가져오기
@@ -192,7 +192,6 @@ def photoeditormain():
         rotated_image = image.rotate(angle)
         update_image(rotated_image)
 
-
     def rotate_CW():
         global image_tk, layer_ids, current_image
         # 현재 이미지 가져오기
@@ -202,7 +201,6 @@ def photoeditormain():
         angle = -90
         rotated_image = image.rotate(angle)
         update_image(rotated_image)
-
 
     def decrease_brightness():
         global image_tk, layer_ids, current_image
@@ -216,7 +214,6 @@ def photoeditormain():
         image = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
         update_image(Image.fromarray(image))
 
-
     def increase_brightness():
         global image_tk, layer_ids, current_image
         # 현재 이미지 가져오기
@@ -228,7 +225,6 @@ def photoeditormain():
         image[:, :, 2] = np.clip(image[:, :, 2], 1, 255)  # v값 255 이상일 경우 최대값인 255로 고정
         image = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
         update_image(Image.fromarray(image))
-
 
     def save_image():
         global current_image, image_path, convert
@@ -250,7 +246,6 @@ def photoeditormain():
         # 이미지 저장
         current_image.save(save_path)
 
-
     def path_convert():
         global current_image, image_path, convert, convert_path
 
@@ -265,7 +260,6 @@ def photoeditormain():
             # 파일 경로에서 .jpg 제거 후 .png 추가
             convert_path = image_path.rsplit('.', 1)[0] + '.png'
             convert = 1
-
 
     def create_button(root, icon_path, icon_name, command, row, column):
         self_frame = tk.Frame(root)
@@ -284,20 +278,10 @@ def photoeditormain():
         label = tk.Label(self_frame, text=icon_name, font=font)
         label.grid(row=1, column=0)
 
-
     # tkinter 윈도우 생성
     win_main = tk.Tk()
     win_main.title("Photo Editor")
     win_main.geometry("1200x700")  # 윈도우 크기 수정
-
-    image_path = None
-    image_tk = None
-    image_size = (0, 0)
-    layer_ids = []
-    current_image = None
-    undo_history = []
-    start_x, start_y = None, None
-    convert = 0
 
     # 좌측 프레임: 이미지 표시
     image_frame = tk.Frame(win_main, width=600, height=600)
@@ -315,7 +299,6 @@ def photoeditormain():
     canvas.bind("<Motion>", lambda event: check_cursor_position(event, canvas))
     canvas.bind("<Button-1>", mouse_click)
     canvas.bind("<ButtonRelease-1>", mouse_release)
-
 
     # 버튼 생성
     font = tkinter.font.Font(family="맑은 고딕", size=15, weight="bold")
