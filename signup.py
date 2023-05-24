@@ -14,7 +14,7 @@ def signupmain():
 
     def signup():
         id = entry_id.get()
-1        username = entry_username.get()
+        username = entry_username.get()
         password = entry_password.get()
         confirm_password = entry_confirm_password.get()
         version = str(version_var.get())
