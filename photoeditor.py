@@ -16,7 +16,7 @@ start_x, start_y = None, None
 convert = 0
 dot_positions = []
 crop_start_x, crop_start_y = None, None
-
+crop_end_x, crop_end_y = None, None
 
 def photoeditormain():
     def on_closing():
@@ -108,20 +108,6 @@ def photoeditormain():
             return (canvas.winfo_pointerx() - canvas.winfo_rootx(),
                     canvas.winfo_pointery() - canvas.winfo_rooty())
 
-    def start_crop(event):
-        global crop_start_x, crop_start_y
-
-        # 자르기 시작 위치 설정
-        crop_start_x, crop_start_y = event.x, event.y
-
-    def drag_crop(event=None):
-        global crop_start_x, crop_start_y
-        if event:
-            # 드래그 중인 경우, 임시 사각형 그리기
-            if crop_start_x is not None and crop_start_y is not None:
-                canvas.create_rectangle(crop_start_x, crop_start_y, event.x, event.y, fill='white', outline='white')
-
-
     def make_dot():
         global dot_positions
 
@@ -162,6 +148,21 @@ def photoeditormain():
                 return
         canvas.config(cursor="")
 
+    def image_crop_wrapper(event):
+        image_crop(event)
+
+    def image_crop(event):
+        global crop_start_x, crop_start_y, crop_end_x, crop_end_y
+
+        if event.type == '7':  # ButtonPress event
+            crop_start_x, crop_start_y = event.x, event.y
+        elif event.type == '8':  # ButtonRelease event
+            crop_end_x, crop_end_y = event.x, event.y
+            if crop_start_x is not None and crop_start_y is not None:
+                canvas.create_rectangle(crop_start_x, crop_start_y, crop_end_x, crop_end_y, outline='white')
+                cropped_image = current_image.crop((crop_start_x, crop_start_y, crop_end_x, crop_end_y))
+                update_image(cropped_image)
+        print(crop_start_x, crop_end_x)
 
     def rotate_CCW():
         global image_tk, layer_ids, current_image
@@ -277,10 +278,11 @@ def photoeditormain():
     canvas.pack(side="left", padx=10, pady=10)
 
     # 마우스 이벤트를 바인드
-    canvas.bind("<Motion>", lambda event: check_cursor_position(None))
-    canvas.bind('<Button-1>', start_crop)
-    canvas.bind('<B1-Motion>', drag_crop)
-
+    # canvas.bind("<Motion>", lambda event: check_cursor_position(None))
+    # 마우스 이벤트를 바인딩
+    canvas.bind("<ButtonPress-1>", lambda event: image_crop_wrapper(event))
+    canvas.bind("<ButtonRelease-1>", lambda event: image_crop_wrapper(event))
+    canvas.bind("<B1-Motion>", lambda event: image_crop_wrapper(event))
 
     # 버튼 생성
     font = tkinter.font.Font(family="맑은 고딕", size=15, weight="bold")
@@ -294,7 +296,7 @@ def photoeditormain():
     create_button(button_frame, "icon//icon_brightness.png", "Darkness", decrease_brightness, 2, 0)
     create_button(button_frame, "icon//icon_brightness.png", "Brightness", increase_brightness, 2, 1)
     create_button(button_frame, "icon//icon_blur.png", "Blur", undo, 2, 2)
-    create_button(button_frame, "icon//icon_cut.png", "Cut", check_cursor_position, 3, 0)
+    create_button(button_frame, "icon//icon_cut.png", "Cut", image_crop_wrapper, 3, 0)
     create_button(button_frame, "icon//icon_undo.png", "Undo", undo, 3, 1)
     create_button(button_frame, "icon//icon_convert.png", "Convert", path_convert, 3, 2)
 
