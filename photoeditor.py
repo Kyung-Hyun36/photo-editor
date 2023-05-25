@@ -14,6 +14,8 @@ current_image = None
 undo_history = []
 start_x, start_y = None, None
 convert = 0
+dot_positions = []
+crop_start_x, crop_start_y = None, None
 
 
 def photoeditormain():
@@ -99,88 +101,67 @@ def photoeditormain():
             undo_history.pop()
 
     # ...
-
     def mouse_event(canvas, event):
-        if event:
-            x = event.x
-            y = event.y
+        if event is not None:
+            return (event.x, event.y)
         else:
-            x = canvas.winfo_pointerx() - canvas.winfo_rootx()
-            y = canvas.winfo_pointery() - canvas.winfo_rooty()
-        return x, y
+            return (canvas.winfo_pointerx() - canvas.winfo_rootx(),
+                    canvas.winfo_pointery() - canvas.winfo_rooty())
 
-    def mouse_click(event):
-        global start_x, start_y
-        # 클릭된 좌표를 저장합니다.
-        start_x, start_y = event.x, event.y
+    def start_crop(event):
+        global crop_start_x, crop_start_y
 
-    def check_cursor_position(event, canvas):
+        # 자르기 시작 위치 설정
+        crop_start_x, crop_start_y = event.x, event.y
+
+    def drag_crop(event=None):
+        global crop_start_x, crop_start_y
+        if event:
+            # 드래그 중인 경우, 임시 사각형 그리기
+            if crop_start_x is not None and crop_start_y is not None:
+                canvas.create_rectangle(crop_start_x, crop_start_y, event.x, event.y, fill='white', outline='white')
+
+
+    def make_dot():
+        global dot_positions
+
+        a, b = image_size
+        radius = 5  # 원의 반지름 설정
+
+        # 각 꼭지점의 좌표 계산
+        coordinates = [
+            (radius + 3, radius + 3),  # 좌측 상단
+            (a // 2, radius + 3),  # 중앙 상단
+            (a - 3, radius + 3),  # 우측 상단
+            (radius + 3, b // 2),  # 좌측 중앙
+            (a - 3, b // 2),  # 우측 중앙
+            (radius + 3, b - 3),  # 좌측 하단
+            (a // 2, b - 3),  # 중앙 하단
+            (a - 3, b - 3),  # 우측 하단
+        ]
+
+        dot_positions = []
+
+        # 각 꼭지점에 원 그리기
+        for x, y in coordinates:
+            dot_positions.append((x - radius, y - radius, x + radius, y + radius))
+            canvas.create_rectangle(x - radius, y - radius, x + radius, y + radius, fill='white', outline='black')
+
+    def check_cursor_position(event):
+        global dot_positions
+        make_dot()
         if event:
             x, y = mouse_event(canvas, event)
         else:
             x, y = mouse_event(canvas, None)
 
-        edge_left = 5
-        edge_right = image_size[0] + 5
-        edge_top = 5
-        edge_bottom = image_size[1] + 5
+        # 마우스 커서가 사각형에 닿았는지 확인합니다.
+        for dot in dot_positions:
+            if dot[0] < x < dot[2] and dot[1] < y < dot[3]:
+                canvas.config(cursor="sizing")  # 사각형에 닿았을 때의 커서 모양을 변경합니다.
+                return
+        canvas.config(cursor="")
 
-        # 마우스 커서가 가장자리에 닿았는지 확인합니다.
-        if edge_left < x < edge_right and edge_top < y < edge_bottom:
-            canvas.config(cursor="")  # 가장자리에 닿았을 때의 커서 모양을 변경합니다.
-        else:
-            canvas.config(cursor="sizing")  # 가장자리를 벗어났을 때의 커서 모양을 원래대로 돌려놓습니다.
-
-    def crop_image():
-        global current_image, image_tk, layer_ids, start_x, start_y, end_x, end_y
-        # 이미지의 좌표 시스템은 tkinter의 캔버스와 다르므로,
-        # 캔버스에서 얻은 좌표를 이미지의 좌표로 변환합니다.
-        start_x = int(start_x * (current_image.width / canvas.winfo_width()))
-        start_y = int(start_y * (current_image.height / canvas.winfo_height()))
-        end_x = int(end_x * (current_image.width / canvas.winfo_width()))
-        end_y = int(end_y * (current_image.height / canvas.winfo_height()))
-
-        # 좌표 순서가 올바르지 않으면 교환합니다.
-        if end_x < start_x:
-            start_x, end_x = end_x, start_x
-        if end_y < start_y:
-            start_y, end_y = end_y, start_y
-
-        # 이미지를 자르고, 새로운 이미지로 업데이트합니다.
-        current_image = current_image.crop((start_x, start_y, end_x, end_y))
-        max_size = 600
-        resized_image = resize_image(current_image, max_size)
-
-        # 모든 이미지 레이어 삭제
-        for layer_id in layer_ids:
-            canvas.delete(layer_id)
-
-        # 새로운 이미지 레이어 추가
-        image_tk = ImageTk.PhotoImage(resized_image)
-        image_layer = canvas.create_image(0, 0, anchor="nw", image=image_tk)
-
-        # 레이어 ID 업데이트
-        layer_ids = [image_layer]
-
-        # 현재 이미지 업데이트
-        current_image = resized_image
-        check_cursor_position(None)
-        mouse_event(None)
-
-    def mouse_release(event):
-        global start_x, start_y, end_x, end_y
-        if event:
-            end_x, end_y = event.x, event.y
-        else:
-            x, y = mouse_event(None)
-            event = tk.Event()
-            event.x = x
-            event.y = y
-
-        # 이미지를 자릅니다.
-        if start_x is not None and start_y is not None and end_x is not None and end_y is not None:
-            crop_image()
-            check_cursor_position(event, canvas)  # crop_image() 실행 후에 check_cursor_position() 함수 호출
 
     def rotate_CCW():
         global image_tk, layer_ids, current_image
@@ -296,9 +277,10 @@ def photoeditormain():
     canvas.pack(side="left", padx=10, pady=10)
 
     # 마우스 이벤트를 바인드
-    canvas.bind("<Motion>", lambda event: check_cursor_position(event, canvas))
-    canvas.bind("<Button-1>", mouse_click)
-    canvas.bind("<ButtonRelease-1>", mouse_release)
+    canvas.bind("<Motion>", lambda event: check_cursor_position(None))
+    canvas.bind('<Button-1>', start_crop)
+    canvas.bind('<B1-Motion>', drag_crop)
+
 
     # 버튼 생성
     font = tkinter.font.Font(family="맑은 고딕", size=15, weight="bold")
@@ -312,7 +294,7 @@ def photoeditormain():
     create_button(button_frame, "icon//icon_brightness.png", "Darkness", decrease_brightness, 2, 0)
     create_button(button_frame, "icon//icon_brightness.png", "Brightness", increase_brightness, 2, 1)
     create_button(button_frame, "icon//icon_blur.png", "Blur", undo, 2, 2)
-    create_button(button_frame, "icon//icon_cut.png", "Cut", lambda: mouse_release(None), 3, 0)
+    create_button(button_frame, "icon//icon_cut.png", "Cut", check_cursor_position, 3, 0)
     create_button(button_frame, "icon//icon_undo.png", "Undo", undo, 3, 1)
     create_button(button_frame, "icon//icon_convert.png", "Convert", path_convert, 3, 2)
 
