@@ -6,8 +6,7 @@ from PIL import Image, ImageTk
 import cv2
 import login
 
-image_path = None
-image_tk = None
+image_path, image_tk = None, None
 image_size = (0, 0)
 layer_ids = []
 current_image = None
@@ -17,7 +16,7 @@ convert = 0
 dot_positions = []
 crop_start_x, crop_start_y = None, None
 crop_end_x, crop_end_y = None, None
-
+event = None
 def photoeditormain():
     def on_closing():
         win_main.destroy()
@@ -62,6 +61,7 @@ def photoeditormain():
         max_size = 600
         resized_image = resize_image(new_image, max_size)
         image_size = resized_image.size
+
 
         # 모든 이미지 레이어 삭제
         for layer_id in layer_ids:
@@ -134,35 +134,33 @@ def photoeditormain():
             canvas.create_rectangle(x - radius, y - radius, x + radius, y + radius, fill='white', outline='black')
 
     def check_cursor_position(event):
-        global dot_positions
-        make_dot()
+        image_x, image_y = 0, 0
+        image_width, image_height = image_size[0], image_size[1]
         if event:
             x, y = mouse_event(canvas, event)
         else:
             x, y = mouse_event(canvas, None)
 
-        # 마우스 커서가 사각형에 닿았는지 확인합니다.
-        for dot in dot_positions:
-            if dot[0] < x < dot[2] and dot[1] < y < dot[3]:
-                canvas.config(cursor="sizing")  # 사각형에 닿았을 때의 커서 모양을 변경합니다.
-                return
-        canvas.config(cursor="")
+        # 이미지 영역에 마우스 커서가 닿았는지 확인합니다.
+        if x >= image_x and x <= image_x + image_width and y >= image_y and y <= image_y + image_height:
+            canvas.config(cursor="crosshair")
+        else:
+            canvas.config(cursor="")
 
-    def image_crop_wrapper(event):
-        image_crop(event)
-
-    def image_crop(event):
-        global crop_start_x, crop_start_y, crop_end_x, crop_end_y
-
-        if event.type == '7':  # ButtonPress event
-            crop_start_x, crop_start_y = event.x, event.y
-        elif event.type == '8':  # ButtonRelease event
-            crop_end_x, crop_end_y = event.x, event.y
-            if crop_start_x is not None and crop_start_y is not None:
-                canvas.create_rectangle(crop_start_x, crop_start_y, crop_end_x, crop_end_y, outline='white')
-                cropped_image = current_image.crop((crop_start_x, crop_start_y, crop_end_x, crop_end_y))
-                update_image(cropped_image)
-        print(crop_start_x, crop_end_x)
+    def image_crop():
+        global crop_start_x, crop_start_y, crop_end_x, crop_end_y, event
+        if event is not None:
+            if event.type == '7':  # ButtonPress event
+                crop_start_x, crop_start_y = event.x, event.y
+                print(crop_start_x, crop_start_y)
+            elif event.type == '8':  # ButtonRelease event
+                crop_end_x, crop_end_y = event.x, event.y
+                if crop_start_x is not None and crop_start_y is not None:
+                    canvas.create_rectangle(crop_start_x, crop_start_y, crop_end_x, crop_end_y, outline='white')
+                    cropped_image = current_image.crop((crop_start_x, crop_start_y, crop_end_x, crop_end_y))
+                    update_image(cropped_image)
+        else:
+            pass
 
     def rotate_CCW():
         global image_tk, layer_ids, current_image
@@ -265,6 +263,7 @@ def photoeditormain():
     win_main.title("Photo Editor")
     win_main.geometry("1200x700")  # 윈도우 크기 수정
 
+
     # 좌측 프레임: 이미지 표시
     image_frame = tk.Frame(win_main, width=600, height=600)
     image_frame.pack(side="left")
@@ -276,14 +275,11 @@ def photoeditormain():
     # 이미지 캔버스 생성
     canvas = tk.Canvas(image_frame, width=600, height=600, bg="white")
     canvas.pack(side="left", padx=10, pady=10)
+    canvas.bind("<Motion>", check_cursor_position)  # 마우스 움직임 이벤트에 check_cursor_position 함수를 바인딩합니다.
+    canvas.bind("<ButtonPress-1>", image_crop)  # 마우스 왼쪽 버튼을 눌렀을 때 crop 시작 좌표를 기록합니다.
+    canvas.bind("<ButtonRelease-1>", image_crop)  # 마우스 왼쪽 버튼을 놓았을 때 crop 종료 좌표를 기록하고, 해당 영역을 잘라냅니다.
 
-    # 마우스 이벤트를 바인드
-    # canvas.bind("<Motion>", lambda event: check_cursor_position(None))
-    # 마우스 이벤트를 바인딩
-    canvas.bind("<ButtonPress-1>", lambda event: image_crop_wrapper(event))
-    canvas.bind("<ButtonRelease-1>", lambda event: image_crop_wrapper(event))
-    canvas.bind("<B1-Motion>", lambda event: image_crop_wrapper(event))
-
+    # ...
     # 버튼 생성
     font = tkinter.font.Font(family="맑은 고딕", size=15, weight="bold")
 
@@ -296,7 +292,7 @@ def photoeditormain():
     create_button(button_frame, "icon//icon_brightness.png", "Darkness", decrease_brightness, 2, 0)
     create_button(button_frame, "icon//icon_brightness.png", "Brightness", increase_brightness, 2, 1)
     create_button(button_frame, "icon//icon_blur.png", "Blur", undo, 2, 2)
-    create_button(button_frame, "icon//icon_cut.png", "Cut", image_crop_wrapper, 3, 0)
+    create_button(button_frame, "icon//icon_cut.png", "Cut", image_crop, 3, 0)
     create_button(button_frame, "icon//icon_undo.png", "Undo", undo, 3, 1)
     create_button(button_frame, "icon//icon_convert.png", "Convert", path_convert, 3, 2)
 
