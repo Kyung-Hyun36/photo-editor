@@ -16,7 +16,7 @@ convert = 0
 dot_positions = []
 crop_start_x, crop_start_y = None, None
 crop_end_x, crop_end_y = None, None
-event = None
+
 def photoeditormain():
     def on_closing():
         win_main.destroy()
@@ -136,6 +136,7 @@ def photoeditormain():
     def check_cursor_position(event):
         image_x, image_y = 0, 0
         image_width, image_height = image_size[0], image_size[1]
+
         if event:
             x, y = mouse_event(canvas, event)
         else:
@@ -146,21 +147,23 @@ def photoeditormain():
             canvas.config(cursor="crosshair")
         else:
             canvas.config(cursor="")
+        canvas.create_rectangle(crop_start_x, crop_start_y, crop_end_x, crop_end_y, outline='black', width=2)
 
     def image_crop():
-        global crop_start_x, crop_start_y, crop_end_x, crop_end_y, event
-        if event is not None:
-            if event.type == '7':  # ButtonPress event
-                crop_start_x, crop_start_y = event.x, event.y
-                print(crop_start_x, crop_start_y)
-            elif event.type == '8':  # ButtonRelease event
-                crop_end_x, crop_end_y = event.x, event.y
-                if crop_start_x is not None and crop_start_y is not None:
-                    canvas.create_rectangle(crop_start_x, crop_start_y, crop_end_x, crop_end_y, outline='white')
-                    cropped_image = current_image.crop((crop_start_x, crop_start_y, crop_end_x, crop_end_y))
-                    update_image(cropped_image)
-        else:
-            pass
+        global crop_start_x, crop_start_y, crop_end_x, crop_end_y
+        if crop_start_x is not None and crop_start_y is not None and crop_end_x is not None and crop_end_y is not None:
+            cropped_image = current_image.crop((crop_start_x, crop_start_y, crop_end_x, crop_end_y))
+            canvas.delete("crop_rectangle")
+            update_image(cropped_image)
+
+    def clicked(event):
+        global crop_start_x, crop_start_y
+        crop_start_x, crop_start_y = event.x, event.y
+
+    def released(event):
+        global crop_end_x, crop_end_y
+        crop_end_x, crop_end_y = event.x, event.y
+        image_crop()
 
     def rotate_CCW():
         global image_tk, layer_ids, current_image
@@ -276,8 +279,8 @@ def photoeditormain():
     canvas = tk.Canvas(image_frame, width=600, height=600, bg="white")
     canvas.pack(side="left", padx=10, pady=10)
     canvas.bind("<Motion>", check_cursor_position)  # 마우스 움직임 이벤트에 check_cursor_position 함수를 바인딩합니다.
-    canvas.bind("<ButtonPress-1>", image_crop)  # 마우스 왼쪽 버튼을 눌렀을 때 crop 시작 좌표를 기록합니다.
-    canvas.bind("<ButtonRelease-1>", image_crop)  # 마우스 왼쪽 버튼을 놓았을 때 crop 종료 좌표를 기록하고, 해당 영역을 잘라냅니다.
+    canvas.bind("<ButtonPress-1>", clicked)  # 마우스 왼쪽 버튼을 눌렀을 때 crop 시작 좌표를 기록합니다.
+    canvas.bind("<ButtonRelease-1>", released)  # 마우스 왼쪽 버튼을 놓았을 때 crop 종료 좌표를 기록하고, 해당 영역을 잘라냅니다.
 
     # ...
     # 버튼 생성
