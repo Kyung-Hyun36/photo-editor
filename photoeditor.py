@@ -16,6 +16,7 @@ convert = 0
 dot_positions = []
 crop_start_x, crop_start_y = None, None
 crop_end_x, crop_end_y = None, None
+current_x, current_y = None, None
 
 def photoeditormain():
     def on_closing():
@@ -147,14 +148,28 @@ def photoeditormain():
             canvas.config(cursor="crosshair")
         else:
             canvas.config(cursor="")
-        canvas.create_rectangle(crop_start_x, crop_start_y, crop_end_x, crop_end_y, outline='black', width=2)
 
     def image_crop():
         global crop_start_x, crop_start_y, crop_end_x, crop_end_y
         if crop_start_x is not None and crop_start_y is not None and crop_end_x is not None and crop_end_y is not None:
             cropped_image = current_image.crop((crop_start_x, crop_start_y, crop_end_x, crop_end_y))
-            canvas.delete("crop_rectangle")
             update_image(cropped_image)
+
+    def draw_rectangle():
+        global crop_start_x, crop_start_y, current_x, current_y
+        if crop_start_x is not None and crop_start_y is not None and current_x is not None and current_y is not None:
+            # 기존에 그려진 사각형 삭제
+            canvas.delete("rectangle")
+
+            # 사각형 그리기
+            canvas.create_rectangle(crop_start_x, crop_start_y, current_x, current_y, outline='black', tags='rectangle')
+
+    def drag(event):
+        global dot_positions, crop_start_x, crop_start_y, current_x, current_y
+
+        # 현재 마우스 위치 저장
+        current_x, current_y = event.x, event.y
+        draw_rectangle()
 
     def clicked(event):
         global crop_start_x, crop_start_y
@@ -163,9 +178,11 @@ def photoeditormain():
     def released(event):
         global crop_end_x, crop_end_y
         crop_end_x, crop_end_y = event.x, event.y
+        canvas.delete("rectangle")
         image_crop()
 
-    def rotate_CCW():
+
+    def rotate_90CCW():
         global image_tk, layer_ids, current_image
         # 현재 이미지 가져오기
         image = current_image
@@ -175,13 +192,32 @@ def photoeditormain():
         rotated_image = image.rotate(angle)
         update_image(rotated_image)
 
-    def rotate_CW():
+    def rotate_90CW():
         global image_tk, layer_ids, current_image
         # 현재 이미지 가져오기
         image = current_image
 
         # 이미지 회전
         angle = -90
+        rotated_image = image.rotate(angle)
+        update_image(rotated_image)
+    def rotate_45CW():
+        global image_tk, layer_ids, current_image
+        # 현재 이미지 가져오기
+        image = current_image
+
+        # 이미지 회전
+        angle = 45
+        rotated_image = image.rotate(angle)
+        update_image(rotated_image)
+
+    def rotate_45CCW():
+        global image_tk, layer_ids, current_image
+        # 현재 이미지 가져오기
+        image = current_image
+
+        # 이미지 회전
+        angle = -45
         rotated_image = image.rotate(angle)
         update_image(rotated_image)
 
@@ -278,10 +314,10 @@ def photoeditormain():
     # 이미지 캔버스 생성
     canvas = tk.Canvas(image_frame, width=600, height=600, bg="white")
     canvas.pack(side="left", padx=10, pady=10)
-    canvas.bind("<Motion>", check_cursor_position)  # 마우스 움직임 이벤트에 check_cursor_position 함수를 바인딩합니다.
+    canvas.bind("<B1-Motion>", drag)  # 마우스 움직임 이벤트에 check_cursor_position 함수를 바인딩합니다.
     canvas.bind("<ButtonPress-1>", clicked)  # 마우스 왼쪽 버튼을 눌렀을 때 crop 시작 좌표를 기록합니다.
     canvas.bind("<ButtonRelease-1>", released)  # 마우스 왼쪽 버튼을 놓았을 때 crop 종료 좌표를 기록하고, 해당 영역을 잘라냅니다.
-
+    canvas.bind("<Motion>", check_cursor_position)
     # ...
     # 버튼 생성
     font = tkinter.font.Font(family="맑은 고딕", size=15, weight="bold")
@@ -289,8 +325,8 @@ def photoeditormain():
     create_button(button_frame, "icon//icon_load.png", "File Load", load_image, 0, 0)
     create_button(button_frame, "icon//icon_save.png", "File Save", save_image, 0, 1)
     create_button(button_frame, "icon//icon_add.png", "Add", undo, 0, 2)
-    create_button(button_frame, "icon//icon_rotateCW.png", "Rotate CW", rotate_CW, 1, 0)
-    create_button(button_frame, "icon//icon_rotateCCW.png", "Rotate CCW", rotate_CCW, 1, 1)
+    create_button(button_frame, "icon//icon_rotateCW.png", "Rotate -90", rotate_90CW, 1, 0)
+    create_button(button_frame, "icon//icon_rotateCCW.png", "Rotate 90", rotate_90CCW, 1, 1)
     create_button(button_frame, "icon//icon_removeBG.png", "BG Remove", undo, 1, 2)
     create_button(button_frame, "icon//icon_brightness.png", "Darkness", decrease_brightness, 2, 0)
     create_button(button_frame, "icon//icon_brightness.png", "Brightness", increase_brightness, 2, 1)
@@ -298,6 +334,8 @@ def photoeditormain():
     create_button(button_frame, "icon//icon_cut.png", "Cut", image_crop, 3, 0)
     create_button(button_frame, "icon//icon_undo.png", "Undo", undo, 3, 1)
     create_button(button_frame, "icon//icon_convert.png", "Convert", path_convert, 3, 2)
+    create_button(button_frame, "icon//icon_rotateCW.png", "Rotate -45", rotate_45CCW, 0, 3)
+    create_button(button_frame, "icon//icon_rotateCCW.png", "Rotate 45", rotate_45CW, 1, 3)
 
     # 윈도우 종료 시 on_closing 함수 실행
     win_main.protocol("WM_DELETE_WINDOW", on_closing)
