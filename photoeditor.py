@@ -1,5 +1,6 @@
 import tkinter as tk
 import tkinter.font
+from tkinter import *
 from tkinter import filedialog
 import numpy as np
 from PIL import Image, ImageTk
@@ -166,7 +167,6 @@ def photoeditormain():
 
     def drag(event):
         global dot_positions, crop_start_x, crop_start_y, current_x, current_y
-
         # 현재 마우스 위치 저장
         current_x, current_y = event.x, event.y
         draw_rectangle()
@@ -181,6 +181,11 @@ def photoeditormain():
         canvas.delete("rectangle")
         image_crop()
 
+    def bind_event():
+        canvas.bind("<B1-Motion>", drag)  # 마우스 움직임 이벤트에 check_cursor_position 함수를 바인딩합니다.
+        canvas.bind("<ButtonPress-1>", clicked)  # 마우스 왼쪽 버튼을 눌렀을 때 crop 시작 좌표를 기록합니다.
+        canvas.bind("<ButtonRelease-1>", released)  # 마우스 왼쪽 버튼을 놓았을 때 crop 종료 좌표를 기록하고, 해당 영역을 잘라냅니다.
+        canvas.bind("<Motion>", check_cursor_position)
 
     def rotate_90CCW():
         global image_tk, layer_ids, current_image
@@ -218,6 +223,15 @@ def photoeditormain():
 
         # 이미지 회전
         angle = -45
+        rotated_image = image.rotate(angle)
+        update_image(rotated_image)
+    def rotate_user():
+        global image_tk, layer_ids, current_image
+        # 현재 이미지 가져오기
+        image = current_image
+
+        # 이미지 회전
+        angle = int(angle_entry.get())
         rotated_image = image.rotate(angle)
         update_image(rotated_image)
 
@@ -280,6 +294,13 @@ def photoeditormain():
             convert_path = image_path.rsplit('.', 1)[0] + '.png'
             convert = 1
 
+    def image_grayscale():
+        global image_tk, layer_ids, current_image
+        image_cv2 = np.array(current_image.convert("RGBA"))
+        image_cv2 = cv2.cvtColor(image_cv2, cv2.COLOR_RGB2GRAY)
+        image_gray = Image.fromarray(image_cv2)
+        update_image(image_gray)
+
     def create_button(root, icon_path, icon_name, command, row, column):
         self_frame = tk.Frame(root)
         self_frame.grid(row=row, column=column)
@@ -296,6 +317,7 @@ def photoeditormain():
         # 라벨 생성
         label = tk.Label(self_frame, text=icon_name, font=font)
         label.grid(row=1, column=0)
+
 
     # tkinter 윈도우 생성
     win_main = tk.Tk()
@@ -314,11 +336,7 @@ def photoeditormain():
     # 이미지 캔버스 생성
     canvas = tk.Canvas(image_frame, width=600, height=600, bg="white")
     canvas.pack(side="left", padx=10, pady=10)
-    canvas.bind("<B1-Motion>", drag)  # 마우스 움직임 이벤트에 check_cursor_position 함수를 바인딩합니다.
-    canvas.bind("<ButtonPress-1>", clicked)  # 마우스 왼쪽 버튼을 눌렀을 때 crop 시작 좌표를 기록합니다.
-    canvas.bind("<ButtonRelease-1>", released)  # 마우스 왼쪽 버튼을 놓았을 때 crop 종료 좌표를 기록하고, 해당 영역을 잘라냅니다.
-    canvas.bind("<Motion>", check_cursor_position)
-    # ...
+    bind_event()
     # 버튼 생성
     font = tkinter.font.Font(family="맑은 고딕", size=15, weight="bold")
 
@@ -336,6 +354,10 @@ def photoeditormain():
     create_button(button_frame, "icon//icon_convert.png", "Convert", path_convert, 3, 2)
     create_button(button_frame, "icon//icon_rotateCW.png", "Rotate -45", rotate_45CCW, 0, 3)
     create_button(button_frame, "icon//icon_rotateCCW.png", "Rotate 45", rotate_45CW, 1, 3)
+    create_button(button_frame, "icon//icon_rotateCW.png", "Rotate", rotate_user, 2, 3)
+    create_button(button_frame, "icon//icon_grayscale.png", "Image grayscale", image_grayscale, 0, 4)
+    angle_entry = Entry(button_frame, width=10)
+    angle_entry.grid(row=3, column=3)
 
     # 윈도우 종료 시 on_closing 함수 실행
     win_main.protocol("WM_DELETE_WINDOW", on_closing)
