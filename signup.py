@@ -2,6 +2,7 @@ import tkinter as tk
 import tkinter.font
 import socket
 import login
+from tkinter import messagebox
 
 HOST = "127.0.0.1"
 PORT = 12345
@@ -20,9 +21,9 @@ def signupmain():
         version = str(version_var.get())
 
         if id == "" or username == "" or password == "" or confirm_password == "":
-            label_message.config(text="빈칸을 모두 기입해 주세요.", fg="red")
+            messagebox.showwarning("회원가입 실패", "빈칸을 모두 기입해 주세요.")
         elif password != confirm_password:
-            label_message.config(text="비밀번호가 일치하지 않습니다.", fg="red")
+            messagebox.showwarning("회원가입 실패", "비밀번호가 일치하지 않습니다.")
         else:
             # 서버에 가입 요청 전송
             client_socket.sendto('signup'.encode(), (HOST, PORT))
@@ -36,10 +37,11 @@ def signupmain():
             # 서버로부터 응답 수신
             response, server_address = client_socket.recvfrom(1024)
             if response.decode() == "회원가입이 완료되었습니다.":
+                messagebox.showinfo("회원가입 완료", response.decode())
                 win_signup.destroy()
                 login.loginmain()
             else:
-                label_message.config(text=response.decode(), fg="red")
+                messagebox.showwarning("회원가입 실패", response.decode())
 
     # 소켓 생성
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -47,8 +49,20 @@ def signupmain():
     # Tkinter 윈도우 생성
     win_signup = tk.Tk()
     win_signup.title("Sign Up")
-    win_signup.geometry("300x250")
     win_signup.resizable(False, False)
+
+    # 화면의 가로 길이와 세로 길이 구하기
+    screen_width = win_signup.winfo_screenwidth()
+    screen_height = win_signup.winfo_screenheight()
+
+    # 윈도우의 가로 길이와 세로 길이 구하기
+    win_width = 300
+    win_height = 250
+
+    # 윈도우를 화면 중앙에 위치시키기
+    x = (screen_width - win_width) // 2
+    y = (screen_height - win_height) // 2
+    win_signup.geometry(f"{win_width}x{win_height}+{x}+{y}")
 
     # 회원가입 프레임 생성
     signup_frame = tk.Frame(win_signup, pady=20)
@@ -89,10 +103,6 @@ def signupmain():
     # 회원가입 버튼
     button_register = tk.Button(signup_frame, text="회원가입", command=signup)
     button_register.grid(row=5, columnspan=2, pady=5)
-
-    # 메시지 표시 레이블
-    label_message = tk.Label(signup_frame, text="")
-    label_message.grid(row=6, columnspan=2, pady=5)
 
     # 윈도우 종료 시 on_closing 함수 실행
     win_signup.protocol("WM_DELETE_WINDOW", on_closing)

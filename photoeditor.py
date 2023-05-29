@@ -318,12 +318,23 @@ def photoeditormain():
         label = tk.Label(self_frame, text=icon_name, font=font)
         label.grid(row=1, column=0)
 
-
     # tkinter 윈도우 생성
     win_main = tk.Tk()
     win_main.title("Photo Editor")
-    win_main.geometry("1200x700")  # 윈도우 크기 수정
+    win_main.resizable(False, False)
 
+    # 화면의 가로 길이와 세로 길이 구하기
+    screen_width = win_main.winfo_screenwidth()
+    screen_height = win_main.winfo_screenheight()
+
+    # 윈도우의 가로 길이와 세로 길이 구하기
+    win_width = 1200
+    win_height = 700
+
+    # 윈도우를 화면 중앙에 위치시키기
+    x = (screen_width - win_width) // 2
+    y = (screen_height - win_height) // 2
+    win_main.geometry(f"{win_width}x{win_height}+{x}+{y}")
 
     # 좌측 프레임: 이미지 표시
     image_frame = tk.Frame(win_main, width=600, height=600)

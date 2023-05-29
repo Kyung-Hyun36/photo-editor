@@ -3,6 +3,7 @@ import tkinter.font
 import socket
 import signup
 import photoeditor
+from tkinter import messagebox
 
 HOST = "127.0.0.1"
 PORT = 12345
@@ -10,8 +11,15 @@ PORT = 12345
 
 def loginmain():
     def on_closing():
-        client_socket.sendto('exit'.encode(), (HOST, PORT))
         win_login.destroy()
+
+    def open_signup():
+        win_login.destroy()
+        signup.signupmain()
+
+    def open_photoeditor():
+        win_login.destroy()
+        photoeditor.photoeditormain()
 
     def login():
         # 서버에 로그인 요청 전송
@@ -27,17 +35,10 @@ def loginmain():
         # 서버로부터 응답 수신
         response, server_address = client_socket.recvfrom(1024)
         if response.decode() == "로그인 성공":
+            messagebox.showinfo(response.decode(), response.decode())
             open_photoeditor()
         else:
-            label_message.config(text=response.decode(), fg="red")
-
-    def open_signup():
-        win_login.destroy()
-        signup.signupmain()
-
-    def open_photoeditor():
-        win_login.destroy()
-        photoeditor.photoeditormain()
+            messagebox.showwarning(response.decode(), "아이디와 비밀번호를 확인해 주세요.")
 
     # 소켓 생성
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -45,7 +46,20 @@ def loginmain():
     # Tkinter 윈도우 생성
     win_login = tk.Tk()
     win_login.title("Login")
-    win_login.geometry("300x180")
+    win_login.resizable(False, False)
+
+    # 화면의 가로 길이와 세로 길이 구하기
+    screen_width = win_login.winfo_screenwidth()
+    screen_height = win_login.winfo_screenheight()
+
+    # 윈도우의 가로 길이와 세로 길이 구하기
+    win_width = 300
+    win_height = 160
+
+    # 윈도우를 화면 중앙에 위치시키기
+    x = (screen_width - win_width) // 2
+    y = (screen_height - win_height) // 2
+    win_login.geometry(f"{win_width}x{win_height}+{x}+{y}")
 
     # 로그인 프레임 생성
     login_frame = tk.Frame(win_login, pady=20)
@@ -70,10 +84,6 @@ def loginmain():
     # 회원가입 버튼
     button_signup = tk.Button(login_frame, text="회원가입", command=open_signup)
     button_signup.grid(row=3, columnspan=2, pady=5)
-
-    # 메시지 표시 레이블
-    label_message = tk.Label(login_frame, text="")
-    label_message.grid(row=4, columnspan=2, pady=5)
 
     # 윈도우 종료 시 on_closing 함수 실행
     win_login.protocol("WM_DELETE_WINDOW", on_closing)
