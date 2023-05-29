@@ -19,7 +19,7 @@ crop_start_x, crop_start_y = None, None
 crop_end_x, crop_end_y = None, None
 current_x, current_y = None, None
 
-def photoeditormain():
+def photoeditormain(username = "admin", userversion = "Free"):
     def on_closing():
         win_main.destroy()
         login.loginmain()
@@ -336,18 +336,27 @@ def photoeditormain():
     y = (screen_height - win_height) // 2
     win_main.geometry(f"{win_width}x{win_height}+{x}+{y}")
 
+    #상단 프레임: 유저 정보 표시
+    user_frame = tk.Frame(win_main, width=1200)
+    user_frame.pack(side="top")
+
     # 좌측 프레임: 이미지 표시
-    image_frame = tk.Frame(win_main, width=600, height=600)
+    image_frame = tk.Frame(win_main)
     image_frame.pack(side="left")
 
     # 우측 프레임: 버튼
-    button_frame = tk.Frame(win_main, width=600, height=600)
+    button_frame = tk.Frame(win_main)
     button_frame.pack(side="left")
+
+    # 유저 정보 생성
+    tk.Label(user_frame, text=userversion).pack(side="right")
+    tk.Label(user_frame, text=username).pack(side="right")
 
     # 이미지 캔버스 생성
     canvas = tk.Canvas(image_frame, width=600, height=600, bg="white")
     canvas.pack(side="left", padx=10, pady=10)
     bind_event()
+
     # 버튼 생성
     font = tkinter.font.Font(family="맑은 고딕", size=15, weight="bold")
 

@@ -57,7 +57,7 @@ def signupmain():
 
     # 윈도우의 가로 길이와 세로 길이 구하기
     win_width = 300
-    win_height = 250
+    win_height = 230
 
     # 윈도우를 화면 중앙에 위치시키기
     x = (screen_width - win_width) // 2

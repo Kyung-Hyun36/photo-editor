@@ -40,6 +40,8 @@ def handle_login(client_socket, client_address):
     # 로그인 로직
     if id.decode() in user_database and user_database[id.decode()]['password'] == password.decode():
         client_socket.sendto('로그인 성공'.encode(), address)
+        client_socket.sendto(user_database[id.decode()]['name'].encode(), address)
+        client_socket.sendto(user_database[id.decode()]['version'].encode(), address)
     else:
         client_socket.sendto('로그인 실패'.encode(), address)
 

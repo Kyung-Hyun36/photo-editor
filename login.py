@@ -17,26 +17,32 @@ def loginmain():
         win_login.destroy()
         signup.signupmain()
 
-    def open_photoeditor():
+    def open_photoeditor(username, userversion):
         win_login.destroy()
-        photoeditor.photoeditormain()
+        photoeditor.photoeditormain(username, userversion)
 
     def login():
         # 서버에 로그인 요청 전송
         client_socket.sendto('login'.encode(), (HOST, PORT))
 
-        username = entry_id.get()
+        userid = entry_id.get()
         password = entry_password.get()
 
         # 아이디와 비밀번호 전송
-        client_socket.sendto(username.encode(), (HOST, PORT))
+        client_socket.sendto(userid.encode(), (HOST, PORT))
         client_socket.sendto(password.encode(), (HOST, PORT))
 
         # 서버로부터 응답 수신
         response, server_address = client_socket.recvfrom(1024)
         if response.decode() == "로그인 성공":
             messagebox.showinfo(response.decode(), response.decode())
-            open_photoeditor()
+            username, server_address = client_socket.recvfrom(1024)
+            userversion, server_address = client_socket.recvfrom(1024)
+            if userversion.decode() == 2:
+                userversion = "Premium"
+            else:
+                userversion = "Free"
+            open_photoeditor(username.decode(), userversion)
         else:
             messagebox.showwarning(response.decode(), "아이디와 비밀번호를 확인해 주세요.")
 
