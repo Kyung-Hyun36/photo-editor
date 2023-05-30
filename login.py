@@ -38,7 +38,7 @@ def loginmain():
             messagebox.showinfo(response.decode(), response.decode())
             username, server_address = client_socket.recvfrom(1024)
             userversion, server_address = client_socket.recvfrom(1024)
-            if userversion.decode() == 2:
+            if userversion.decode() == "2":
                 userversion = "Premium"
             else:
                 userversion = "Free"

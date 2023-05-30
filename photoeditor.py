@@ -19,7 +19,7 @@ crop_start_x, crop_start_y = None, None
 crop_end_x, crop_end_y = None, None
 current_x, current_y = None, None
 
-def photoeditormain(username = "admin", userversion = "Free"):
+def photoeditormain(username = "admin", userversion = "Premium"):
     def on_closing():
         win_main.destroy()
         login.loginmain()
@@ -301,22 +301,16 @@ def photoeditormain(username = "admin", userversion = "Free"):
         image_gray = Image.fromarray(image_cv2)
         update_image(image_gray)
 
-    def create_button(root, icon_path, icon_name, command, row, column):
-        self_frame = tk.Frame(root)
-        self_frame.grid(row=row, column=column)
-
+    def create_button(root, icon_path, command, row, column):
         # 이미지 로드
         image = resize_image(Image.open(icon_path), 80)
         icon = ImageTk.PhotoImage(image)
 
         # 버튼 생성
-        button = tk.Button(self_frame, image=icon, command=command)
+        button = tk.Button(root, image=icon, command=command)
         button.image = icon  # 사진에 대한 참조 유지
-        button.grid(row=0, column=0)
+        button.grid(row=row, column=column)
 
-        # 라벨 생성
-        label = tk.Label(self_frame, text=icon_name, font=font)
-        label.grid(row=1, column=0)
 
     # tkinter 윈도우 생성
     win_main = tk.Tk()
@@ -337,45 +331,47 @@ def photoeditormain(username = "admin", userversion = "Free"):
     win_main.geometry(f"{win_width}x{win_height}+{x}+{y}")
 
     #상단 프레임: 유저 정보 표시
-    user_frame = tk.Frame(win_main, width=1200)
-    user_frame.pack(side="top")
+    user_frame = tk.Frame(win_main, width=200, height=40)
+    user_frame.place(x=1030, y=0)
 
     # 좌측 프레임: 이미지 표시
-    image_frame = tk.Frame(win_main)
-    image_frame.pack(side="left")
+    image_frame = tk.Frame(win_main, width=610, height=610)
+    image_frame.place(x=0, y=40)
 
     # 우측 프레임: 버튼
-    button_frame = tk.Frame(win_main)
-    button_frame.pack(side="left")
+    button_frame = tk.Frame(win_main, width=600, height=610)
+    button_frame.place(x=610, y=40)
 
     # 유저 정보 생성
-    tk.Label(user_frame, text=userversion).pack(side="right")
-    tk.Label(user_frame, text=username).pack(side="right")
+    font = tkinter.font.Font(family="Tahoma", size=12, weight="bold")
+
+    tk.Label(user_frame, text=username, font=font).place(x=0, y=0)
+    tk.Label(user_frame, text=userversion, font=font).place(x=70, y=0)
 
     # 이미지 캔버스 생성
     canvas = tk.Canvas(image_frame, width=600, height=600, bg="white")
-    canvas.pack(side="left", padx=10, pady=10)
+    canvas.place(x=10, y=0)
     bind_event()
 
     # 버튼 생성
     font = tkinter.font.Font(family="맑은 고딕", size=15, weight="bold")
 
-    create_button(button_frame, "icon//icon_load.png", "File Load", load_image, 0, 0)
-    create_button(button_frame, "icon//icon_save.png", "File Save", save_image, 0, 1)
-    create_button(button_frame, "icon//icon_add.png", "Add", undo, 0, 2)
-    create_button(button_frame, "icon//icon_rotateCW.png", "Rotate -90", rotate_90CW, 1, 0)
-    create_button(button_frame, "icon//icon_rotateCCW.png", "Rotate 90", rotate_90CCW, 1, 1)
-    create_button(button_frame, "icon//icon_removeBG.png", "BG Remove", undo, 1, 2)
-    create_button(button_frame, "icon//icon_brightness.png", "Darkness", decrease_brightness, 2, 0)
-    create_button(button_frame, "icon//icon_brightness.png", "Brightness", increase_brightness, 2, 1)
-    create_button(button_frame, "icon//icon_blur.png", "Blur", undo, 2, 2)
-    create_button(button_frame, "icon//icon_cut.png", "Cut", image_crop, 3, 0)
-    create_button(button_frame, "icon//icon_undo.png", "Undo", undo, 3, 1)
-    create_button(button_frame, "icon//icon_convert.png", "Convert", path_convert, 3, 2)
-    create_button(button_frame, "icon//icon_rotateCW.png", "Rotate -45", rotate_45CCW, 0, 3)
-    create_button(button_frame, "icon//icon_rotateCCW.png", "Rotate 45", rotate_45CW, 1, 3)
-    create_button(button_frame, "icon//icon_rotateCW.png", "Rotate", rotate_user, 2, 3)
-    create_button(button_frame, "icon//icon_grayscale.png", "Image grayscale", image_grayscale, 0, 4)
+    create_button(button_frame, "icon//icon_load.png", load_image, 0, 0)
+    create_button(button_frame, "icon//icon_save.png", save_image, 0, 1)
+    create_button(button_frame, "icon//icon_add.png", undo, 0, 2)
+    create_button(button_frame, "icon//icon_rotateCW.png", rotate_90CW, 1, 0)
+    create_button(button_frame, "icon//icon_rotateCCW.png", rotate_90CCW, 1, 1)
+    create_button(button_frame, "icon//icon_removeBG.png", undo, 1, 2)
+    create_button(button_frame, "icon//icon_brightness.png", decrease_brightness, 2, 0)
+    create_button(button_frame, "icon//icon_brightness.png", increase_brightness, 2, 1)
+    create_button(button_frame, "icon//icon_blur.png", undo, 2, 2)
+    create_button(button_frame, "icon//icon_cut.png", image_crop, 3, 0)
+    create_button(button_frame, "icon//icon_undo.png", undo, 3, 1)
+    create_button(button_frame, "icon//icon_convert.png", path_convert, 3, 2)
+    create_button(button_frame, "icon//icon_rotateCW.png", rotate_45CCW, 0, 3)
+    create_button(button_frame, "icon//icon_rotateCCW.png", rotate_45CW, 1, 3)
+    create_button(button_frame, "icon//icon_rotateCW.png", rotate_user, 2, 3)
+    create_button(button_frame, "icon//icon_grayscale.png", image_grayscale, 0, 4)
     angle_entry = Entry(button_frame, width=10)
     angle_entry.grid(row=3, column=3)
 

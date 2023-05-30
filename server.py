@@ -52,8 +52,6 @@ server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 # 서버 주소 설정
 server_socket.bind((HOST, PORT))
 
-print(f"서버가 실행되었습니다. {HOST}:{PORT}")
-
 while True:
     request, client_address = server_socket.recvfrom(1024)
 
