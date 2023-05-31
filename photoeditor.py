@@ -305,13 +305,21 @@ def photoeditormain(username="admin", userversion="Premium"):
 
     def create_button(root, icon_path, command, x, y):
         # 이미지 로드
-        image = resize_image(Image.open(icon_path), 80)
+        image = resize_image(Image.open(icon_path), 90)
         icon = ImageTk.PhotoImage(image)
 
         # 버튼 생성
-        button = tk.Button(root, image=icon, command=command)
+        button = tk.Button(root, image=icon, command=command, background="white", borderwidth=0, highlightthickness=0)
         button.image = icon  # 사진에 대한 참조 유지
         button.place(x=x, y=y)
+
+    def create_title(root, title, y):
+        font_title = tkinter.font.Font(family="맑은 고딕", size=12, weight="bold")
+        tk.Label(root, text=title, font=font_title, background="white").place(x=5, y=y)
+
+    def create_line(root, y):
+        tk.Label(root, width=46, height=1, background="gray").place(x=5, y=y)
+        tk.Label(root, width=46, height=1, background="white").place(x=5, y=y + 2)
 
     # tkinter 윈도우 생성
     win_main = tk.Tk()
@@ -337,22 +345,25 @@ def photoeditormain(username="admin", userversion="Premium"):
     user_frame.place(x=0, y=0)
 
     # 좌측 프레임: 버튼1
-    button1_frame = tk.Frame(win_main, width=345, height=710, background="white", highlightbackground="gray", highlightthickness=2)
+    button1_frame = tk.Frame(win_main, width=345, height=710, background="white", highlightbackground="gray",
+                             highlightthickness=2)
     button1_frame.place(x=2, y=40)
 
     # 중앙 프레임: 이미지
-    image_frame = tk.Frame(win_main, width=710, height=710, background="white", highlightbackground="gray", highlightthickness=2)
+    image_frame = tk.Frame(win_main, width=710, height=710, background="white", highlightbackground="gray",
+                           highlightthickness=2)
     image_frame.place(x=345, y=40)
 
     # 우측 프레임: 버튼2
-    button2_frame = tk.Frame(win_main, width=345, height=710, background="white", highlightbackground="gray", highlightthickness=2)
+    button2_frame = tk.Frame(win_main, width=345, height=710, background="white", highlightbackground="gray",
+                             highlightthickness=2)
     button2_frame.place(x=1053, y=40)
 
     # 유저 정보 생성
-    font = tkinter.font.Font(family="Tahoma", size=12, weight="bold")
+    font_user = tkinter.font.Font(family="Tahoma", size=12, weight="bold")
 
-    tk.Label(user_frame, text=username, font=font).place(x=0, y=0)
-    tk.Label(user_frame, text=userversion, font=font).place(x=70, y=0)
+    tk.Label(user_frame, text=username, font=font_user, background="white").place(x=1220, y=7)
+    tk.Label(user_frame, text=userversion, font=font_user, background="white").place(x=1300, y=7)
 
     # 이미지 캔버스 생성
     canvas = tk.Canvas(image_frame, width=700, height=700, bg="white")
@@ -360,13 +371,17 @@ def photoeditormain(username="admin", userversion="Premium"):
     bind_event()
 
     # 버튼 생성
-    font = tkinter.font.Font(family="맑은 고딕", size=15, weight="bold")
+    create_title(button1_frame, "File", 3)
+    create_line(button1_frame, 27)
+    create_button(button1_frame, "icon//icon_load.png", load_image, 10, 35)
+    create_button(button1_frame, "icon//icon_save.png", save_image, 110, 35)
 
-    create_button(button1_frame, "icon//icon_load.png", load_image, 0, 0)
-    create_button(button1_frame, "icon//icon_save.png", save_image, 0, 1)
-    # create_button(button1_frame, "icon//icon_add.png", undo, 0, 2)
-    # create_button(button1_frame, "icon//icon_rotateCW.png", rotate_90CW, 1, 0)
-    # create_button(button1_frame, "icon//icon_rotateCCW.png", rotate_90CCW, 1, 1)
+    create_title(button1_frame, "Rotate", 133)
+    create_line(button1_frame, 157)
+    create_button(button1_frame, "icon//CW_rotate90.png", rotate_90CW, 10, 165)
+    create_button(button1_frame, "icon//CCW_rotate90.png", rotate_90CCW, 110, 165)
+    # create_button(button1_frame, "icon//icon_add.png", undo, 210, 35)
+    # create_button(button1_frame, "icon//icon_rotateCCW.png", rotate_90CCW, 210, 165)
     # create_button(button1_frame, "icon//icon_removeBG.png", undo, 1, 2)
     # create_button(button1_frame, "icon//icon_brightness.png", decrease_brightness, 2, 0)
     # create_button(button1_frame, "icon//icon_brightness.png", increase_brightness, 2, 1)
