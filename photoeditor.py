@@ -6,6 +6,7 @@ import numpy as np
 from PIL import Image, ImageTk
 import cv2
 import login
+from tkinter import messagebox
 
 image_path, image_tk = None, None
 image_size = (0, 0)
@@ -21,9 +22,48 @@ current_x, current_y = None, None
 
 
 def photoeditormain(username="admin", userversion="Premium"):
+    def custom_askyesno(title, message, text1="종료", text2="로그아웃"):
+        # 사용자 정의 대화상자 생성
+        dialog = tk.Toplevel(win_main)
+        dialog.title(title)
+
+        # 윈도우의 가로 길이와 세로 길이 구하기
+        dialog_width = 300
+        dialog_height = 100
+
+        # 윈도우를 화면 중앙에 위치시키기
+        x = (screen_width - dialog_width) // 2
+        y = (screen_height - dialog_height) // 2
+        dialog.geometry(f"{dialog_width}x{dialog_height}+{x}+{y}")
+
+        # 메시지 표시
+        tk.Label(dialog, text=message).pack(pady=20)
+
+        # 버튼1
+        def command1():
+            dialog.result = True
+            dialog.destroy()
+
+        tk.Button(dialog, text=text1, command=command1).place(x=100, y=60)
+
+        # 버튼2
+        def command2():
+            dialog.result = False
+            dialog.destroy()
+        tk.Button(dialog, text=text2, command=command2).place(x=150, y=60)
+
+        # 대화상자를 modal로 설정하여 다른 창을 클릭할 수 없게 함
+        dialog.transient(win_main)
+        dialog.grab_set()
+        win_main.wait_window(dialog)
+
+        # 대화상자가 닫힐 때 result 값을 반환
+        return dialog.result
     def on_closing():
+        result = custom_askyesno("종료", "프로그램을 종료하거나 로그아웃하시겠습니까?", "종료", "로그아웃")
         win_main.destroy()
-        login.loginmain()
+        if not result:
+            login.loginmain()
 
     def resize_image(image, max_size):
         # 프레임 크기에 맞게 이미지 사이즈 재조정
@@ -362,6 +402,9 @@ def photoeditormain(username="admin", userversion="Premium"):
     button1_frame = tk.Frame(win_main, width=345, height=710, background="white", highlightbackground="gray",
                              highlightthickness=2)
     button1_frame.place(x=2, y=40)
+
+    scrollbar1 = tk.Scrollbar(button1_frame)
+    scrollbar1.place()
 
     # 중앙 프레임: 이미지
     image_frame = tk.Frame(win_main, width=710, height=710, background="white", highlightbackground="gray",
