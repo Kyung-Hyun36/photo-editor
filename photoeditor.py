@@ -90,7 +90,7 @@ def photoeditormain(username="admin", userversion="Premium"):
 
             # 현재 이미지 업데이트
             current_image = previous_image
-            max_size = 600
+            max_size = 700
             resized_image = resize_image(current_image, max_size)
             for layer_id in layer_ids:
                 canvas.delete(layer_id)
@@ -99,8 +99,22 @@ def photoeditormain(username="admin", userversion="Premium"):
             layer_ids = [image_layer]
             current_image = resized_image
 
-            # 현재 작업 단계를 undo_history에서 제거
-            undo_history.pop()
+    def redo():
+        global image_tk, layer_ids, current_image, undo_history
+        if len(undo_history) >= 2:
+            # 이전 작업 단계의 이미지 가져오기
+            next_image = undo_history[-1]
+
+            # 현재 이미지 업데이트
+            current_image = next_image
+            max_size = 700
+            resized_image = resize_image(current_image, max_size)
+            for layer_id in layer_ids:
+                canvas.delete(layer_id)
+            image_tk = ImageTk.PhotoImage(resized_image)
+            image_layer = canvas.create_image(0, 0, anchor="nw", image=image_tk)
+            layer_ids = [image_layer]
+            current_image = resized_image
 
     # ...
     def mouse_event(canvas, event):
@@ -387,7 +401,8 @@ def photoeditormain(username="admin", userversion="Premium"):
     # create_button(button1_frame, "icon//icon_brightness.png", increase_brightness, 2, 1)
     # create_button(button1_frame, "icon//icon_blur.png", undo, 2, 2)
     # create_button(button1_frame, "icon//icon_cut.png", image_crop, 3, 0)
-    # create_button(button1_frame, "icon//icon_undo.png", undo, 3, 1)
+    create_button(button1_frame, "icon//icon_undo.png", undo, 10, 295)
+    create_button(button1_frame, "icon//icon_Redo.png", redo, 110, 295)
     # create_button(button1_frame, "icon//icon_convert.png", path_convert, 3, 2)
     # create_button(button1_frame, "icon//icon_rotateCW.png", rotate_45CCW, 0, 3)
     # create_button(button1_frame, "icon//icon_rotateCCW.png", rotate_45CW, 1, 3)
