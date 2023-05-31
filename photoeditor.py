@@ -19,7 +19,8 @@ crop_start_x, crop_start_y = None, None
 crop_end_x, crop_end_y = None, None
 current_x, current_y = None, None
 
-def photoeditormain(username = "admin", userversion = "Premium"):
+
+def photoeditormain(username="admin", userversion="Premium"):
     def on_closing():
         win_main.destroy()
         login.loginmain()
@@ -60,10 +61,9 @@ def photoeditormain(username = "admin", userversion = "Premium"):
         global image_tk, layer_ids, current_image, image_size
 
         # 이미지 리사이즈
-        max_size = 600
+        max_size = 700
         resized_image = resize_image(new_image, max_size)
         image_size = resized_image.size
-
 
         # 모든 이미지 레이어 삭제
         for layer_id in layer_ids:
@@ -206,6 +206,7 @@ def photoeditormain(username = "admin", userversion = "Premium"):
         angle = -90
         rotated_image = image.rotate(angle)
         update_image(rotated_image)
+
     def rotate_45CW():
         global image_tk, layer_ids, current_image
         # 현재 이미지 가져오기
@@ -225,6 +226,7 @@ def photoeditormain(username = "admin", userversion = "Premium"):
         angle = -45
         rotated_image = image.rotate(angle)
         update_image(rotated_image)
+
     def rotate_user():
         global image_tk, layer_ids, current_image
         # 현재 이미지 가져오기
@@ -301,7 +303,7 @@ def photoeditormain(username = "admin", userversion = "Premium"):
         image_gray = Image.fromarray(image_cv2)
         update_image(image_gray)
 
-    def create_button(root, icon_path, command, row, column):
+    def create_button(root, icon_path, command, x, y):
         # 이미지 로드
         image = resize_image(Image.open(icon_path), 80)
         icon = ImageTk.PhotoImage(image)
@@ -309,38 +311,42 @@ def photoeditormain(username = "admin", userversion = "Premium"):
         # 버튼 생성
         button = tk.Button(root, image=icon, command=command)
         button.image = icon  # 사진에 대한 참조 유지
-        button.grid(row=row, column=column)
-
+        button.place(x=x, y=y)
 
     # tkinter 윈도우 생성
     win_main = tk.Tk()
     win_main.title("Photo Editor")
     win_main.resizable(False, False)
+    win_main.configure(background="white")
 
     # 화면의 가로 길이와 세로 길이 구하기
     screen_width = win_main.winfo_screenwidth()
     screen_height = win_main.winfo_screenheight()
 
     # 윈도우의 가로 길이와 세로 길이 구하기
-    win_width = 1200
-    win_height = 700
+    win_width = 1400
+    win_height = 748
 
     # 윈도우를 화면 중앙에 위치시키기
     x = (screen_width - win_width) // 2
     y = (screen_height - win_height) // 2
     win_main.geometry(f"{win_width}x{win_height}+{x}+{y}")
 
-    #상단 프레임: 유저 정보 표시
-    user_frame = tk.Frame(win_main, width=200, height=40)
-    user_frame.place(x=1030, y=0)
+    # 상단 프레임: 유저 정보 표시
+    user_frame = tk.Frame(win_main, width=1400, height=40, background="white")
+    user_frame.place(x=0, y=0)
 
-    # 좌측 프레임: 이미지 표시
-    image_frame = tk.Frame(win_main, width=610, height=610)
-    image_frame.place(x=0, y=40)
+    # 좌측 프레임: 버튼1
+    button1_frame = tk.Frame(win_main, width=345, height=710, background="white", highlightbackground="gray", highlightthickness=2)
+    button1_frame.place(x=2, y=40)
 
-    # 우측 프레임: 버튼
-    button_frame = tk.Frame(win_main, width=600, height=610)
-    button_frame.place(x=610, y=40)
+    # 중앙 프레임: 이미지
+    image_frame = tk.Frame(win_main, width=710, height=710, background="white", highlightbackground="gray", highlightthickness=2)
+    image_frame.place(x=345, y=40)
+
+    # 우측 프레임: 버튼2
+    button2_frame = tk.Frame(win_main, width=345, height=710, background="white", highlightbackground="gray", highlightthickness=2)
+    button2_frame.place(x=1053, y=40)
 
     # 유저 정보 생성
     font = tkinter.font.Font(family="Tahoma", size=12, weight="bold")
@@ -349,31 +355,31 @@ def photoeditormain(username = "admin", userversion = "Premium"):
     tk.Label(user_frame, text=userversion, font=font).place(x=70, y=0)
 
     # 이미지 캔버스 생성
-    canvas = tk.Canvas(image_frame, width=600, height=600, bg="white")
-    canvas.place(x=10, y=0)
+    canvas = tk.Canvas(image_frame, width=700, height=700, bg="white")
+    canvas.place(x=0, y=0)
     bind_event()
 
     # 버튼 생성
     font = tkinter.font.Font(family="맑은 고딕", size=15, weight="bold")
 
-    create_button(button_frame, "icon//icon_load.png", load_image, 0, 0)
-    create_button(button_frame, "icon//icon_save.png", save_image, 0, 1)
-    create_button(button_frame, "icon//icon_add.png", undo, 0, 2)
-    create_button(button_frame, "icon//icon_rotateCW.png", rotate_90CW, 1, 0)
-    create_button(button_frame, "icon//icon_rotateCCW.png", rotate_90CCW, 1, 1)
-    create_button(button_frame, "icon//icon_removeBG.png", undo, 1, 2)
-    create_button(button_frame, "icon//icon_brightness.png", decrease_brightness, 2, 0)
-    create_button(button_frame, "icon//icon_brightness.png", increase_brightness, 2, 1)
-    create_button(button_frame, "icon//icon_blur.png", undo, 2, 2)
-    create_button(button_frame, "icon//icon_cut.png", image_crop, 3, 0)
-    create_button(button_frame, "icon//icon_undo.png", undo, 3, 1)
-    create_button(button_frame, "icon//icon_convert.png", path_convert, 3, 2)
-    create_button(button_frame, "icon//icon_rotateCW.png", rotate_45CCW, 0, 3)
-    create_button(button_frame, "icon//icon_rotateCCW.png", rotate_45CW, 1, 3)
-    create_button(button_frame, "icon//icon_rotateCW.png", rotate_user, 2, 3)
-    create_button(button_frame, "icon//icon_grayscale.png", image_grayscale, 0, 4)
-    angle_entry = Entry(button_frame, width=10)
-    angle_entry.grid(row=3, column=3)
+    create_button(button1_frame, "icon//icon_load.png", load_image, 0, 0)
+    create_button(button1_frame, "icon//icon_save.png", save_image, 0, 1)
+    # create_button(button1_frame, "icon//icon_add.png", undo, 0, 2)
+    # create_button(button1_frame, "icon//icon_rotateCW.png", rotate_90CW, 1, 0)
+    # create_button(button1_frame, "icon//icon_rotateCCW.png", rotate_90CCW, 1, 1)
+    # create_button(button1_frame, "icon//icon_removeBG.png", undo, 1, 2)
+    # create_button(button1_frame, "icon//icon_brightness.png", decrease_brightness, 2, 0)
+    # create_button(button1_frame, "icon//icon_brightness.png", increase_brightness, 2, 1)
+    # create_button(button1_frame, "icon//icon_blur.png", undo, 2, 2)
+    # create_button(button1_frame, "icon//icon_cut.png", image_crop, 3, 0)
+    # create_button(button1_frame, "icon//icon_undo.png", undo, 3, 1)
+    # create_button(button1_frame, "icon//icon_convert.png", path_convert, 3, 2)
+    # create_button(button1_frame, "icon//icon_rotateCW.png", rotate_45CCW, 0, 3)
+    # create_button(button1_frame, "icon//icon_rotateCCW.png", rotate_45CW, 1, 3)
+    # create_button(button1_frame, "icon//icon_rotateCW.png", rotate_user, 2, 3)
+    # create_button(button1_frame, "icon//icon_grayscale.png", image_grayscale, 0, 4)
+    # angle_entry = Entry(button1_frame, width=10)
+    # angle_entry.grid(row=3, column=3)
 
     # 윈도우 종료 시 on_closing 함수 실행
     win_main.protocol("WM_DELETE_WINDOW", on_closing)
