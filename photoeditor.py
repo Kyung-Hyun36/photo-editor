@@ -19,7 +19,7 @@ dot_positions = []
 crop_start_x, crop_start_y = None, None
 crop_end_x, crop_end_y = None, None
 current_x, current_y = None, None
-
+undo = -1
 
 def photoeditormain(username="admin", userversion="Premium"):
     def custom_askyesno(title, message, text1="종료", text2="로그아웃"):
@@ -123,10 +123,11 @@ def photoeditormain(username="admin", userversion="Premium"):
         undo_history.append(current_image.copy())
 
     def undo():
-        global image_tk, layer_ids, current_image, undo_history
+        global image_tk, layer_ids, current_image, undo_history, undo
         if len(undo_history) >= 2:
+            undo -= 1
             # 이전 작업 단계의 이미지 가져오기
-            previous_image = undo_history[-2]
+            previous_image = undo_history[undo]
 
             # 현재 이미지 업데이트
             current_image = previous_image
@@ -140,10 +141,11 @@ def photoeditormain(username="admin", userversion="Premium"):
             current_image = resized_image
 
     def redo():
-        global image_tk, layer_ids, current_image, undo_history
+        global image_tk, layer_ids, current_image, undo_history, undo
         if len(undo_history) >= 2:
+            undo += 1
             # 이전 작업 단계의 이미지 가져오기
-            next_image = undo_history[-1]
+            next_image = undo_history[undo]
 
             # 현재 이미지 업데이트
             current_image = next_image
@@ -425,7 +427,7 @@ def photoeditormain(username="admin", userversion="Premium"):
     # 이미지 캔버스 생성
     canvas = tk.Canvas(image_frame, width=700, height=700, bg="white")
     canvas.place(x=0, y=0)
-    bind_event()
+    # bind_event()
 
     # 버튼 생성
     create_title(button1_frame, "File", 3)
@@ -443,9 +445,9 @@ def photoeditormain(username="admin", userversion="Premium"):
     # create_button(button1_frame, "icon//icon_brightness.png", decrease_brightness, 2, 0)
     # create_button(button1_frame, "icon//icon_brightness.png", increase_brightness, 2, 1)
     # create_button(button1_frame, "icon//icon_blur.png", undo, 2, 2)
-    # create_button(button1_frame, "icon//icon_cut.png", image_crop, 3, 0)
     create_button(button1_frame, "icon//icon_undo.png", undo, 10, 295)
     create_button(button1_frame, "icon//icon_Redo.png", redo, 110, 295)
+    create_button(button1_frame, "icon//icon_crop.png", bind_event, 210, 295)
     # create_button(button1_frame, "icon//icon_convert.png", path_convert, 3, 2)
     # create_button(button1_frame, "icon//icon_rotateCW.png", rotate_45CCW, 0, 3)
     # create_button(button1_frame, "icon//icon_rotateCCW.png", rotate_45CW, 1, 3)
