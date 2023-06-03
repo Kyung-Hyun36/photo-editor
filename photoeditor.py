@@ -371,11 +371,11 @@ def photoeditormain(username="admin", userversion="Premium"):
 
     def create_title(root, title, y):
         font_title = tkinter.font.Font(family="맑은 고딕", size=12, weight="bold")
-        tk.Label(root, text=title, font=font_title, background="white").place(x=5, y=y)
+        tk.Label(root, text=title, font=font_title, background="white").place(x=20, y=y)
 
     def create_line(root, y):
-        tk.Label(root, width=46, height=1, background="gray").place(x=5, y=y)
-        tk.Label(root, width=46, height=1, background="white").place(x=5, y=y + 2)
+        tk.Label(root, width=41, height=1, background="gray").place(x=20, y=y)
+        tk.Label(root, width=41, height=1, background="white").place(x=20, y=y + 2)
 
     # tkinter 윈도우 생성
     win_main = tk.Tk()
@@ -430,31 +430,46 @@ def photoeditormain(username="admin", userversion="Premium"):
     # bind_event()
 
     # 버튼 생성
-    create_title(button1_frame, "File", 3)
-    create_line(button1_frame, 27)
-    create_button(button1_frame, "icon//icon_load.png", load_image, 10, 35)
-    create_button(button1_frame, "icon//icon_save.png", save_image, 110, 35)
+    create_button(user_frame, "icon//icon_load.png", load_image, 1000, 0)
+    create_button(user_frame, "icon//icon_save.png", save_image, 1100, 0)
 
-    create_title(button1_frame, "Rotate", 133)
-    create_line(button1_frame, 157)
-    create_button(button1_frame, "icon//CW_rotate90.png", rotate_90CW, 10, 165)
-    create_button(button1_frame, "icon//CCW_rotate90.png", rotate_90CCW, 110, 165)
-    # create_button(button1_frame, "icon//icon_add.png", undo, 210, 35)
-    # create_button(button1_frame, "icon//icon_rotateCCW.png", rotate_90CCW, 210, 165)
-    # create_button(button1_frame, "icon//icon_removeBG.png", undo, 1, 2)
-    # create_button(button1_frame, "icon//icon_brightness.png", decrease_brightness, 2, 0)
-    # create_button(button1_frame, "icon//icon_brightness.png", increase_brightness, 2, 1)
-    # create_button(button1_frame, "icon//icon_blur.png", undo, 2, 2)
-    create_button(button1_frame, "icon//icon_undo.png", undo, 10, 295)
-    create_button(button1_frame, "icon//icon_Redo.png", redo, 110, 295)
-    create_button(button1_frame, "icon//icon_crop.png", bind_event, 210, 295)
-    # create_button(button1_frame, "icon//icon_convert.png", path_convert, 3, 2)
-    # create_button(button1_frame, "icon//icon_rotateCW.png", rotate_45CCW, 0, 3)
-    # create_button(button1_frame, "icon//icon_rotateCCW.png", rotate_45CW, 1, 3)
-    # create_button(button1_frame, "icon//icon_rotateCW.png", rotate_user, 2, 3)
+    create_title(button1_frame, "Rotate", 3)
+    create_line(button1_frame, 27)
+    create_button(button1_frame, "icon//icon_rotate45CW.png", rotate_45CW, 25, 35)
+    create_button(button1_frame, "icon//icon_rotate45CCW.png", rotate_45CCW, 125, 35)
+    create_button(button1_frame, "icon//icon_rotate90CW.png", rotate_90CW, 25, 135)
+    create_button(button1_frame, "icon//icon_rotate90CCW.png", rotate_90CCW, 125, 135)
+    create_button(button1_frame, "icon//icon_rotate90CCW.png", rotate_user, 225, 75)
+    angle_entry = Entry(button1_frame, width=10, background="gray")
+    angle_entry.place(x=233, y=170)
+
+    create_title(button1_frame, "Adjust Brightness", 233)
+    create_line(button1_frame, 257)
+    create_button(button1_frame, "icon//icon_brightness.png", decrease_brightness, 25, 265)
+    create_button(button1_frame, "icon//icon_brightness.png", increase_brightness, 125, 265)
+
+    create_title(button1_frame, "Blur", 363)
+    create_line(button1_frame, 387)
+    create_button(button1_frame, "icon//icon_blur.png", undo, 25, 395)
+    create_button(button1_frame, "icon//icon_blur.png", undo, 125, 395)
+    create_button(button1_frame, "icon//icon_blur.png", undo, 225, 395)
+
+    create_title(button1_frame, "Etc.", 493)
+    create_line(button1_frame, 517)
+    create_button(button1_frame, "icon//icon_crop.png", bind_event, 25, 525)
+    create_button(button1_frame, "icon//icon_convert.png", path_convert, 125, 525)
+
+    create_title(button2_frame, "Undo & Redo", 3)
+    create_line(button2_frame, 27)
+    create_button(button2_frame, "icon//icon_undo.png", undo, 25, 35)
+    create_button(button2_frame, "icon//icon_redo.png", redo, 125, 35)
+
+    create_title(button2_frame, "Add & Remove", 133)
+    create_line(button2_frame, 157)
+    create_button(button2_frame, "icon//icon_add.png", undo, 25, 165)
+    create_button(button2_frame, "icon//icon_removeBG.png", undo, 125, 165)
+
     # create_button(button1_frame, "icon//icon_grayscale.png", image_grayscale, 0, 4)
-    # angle_entry = Entry(button1_frame, width=10)
-    # angle_entry.grid(row=3, column=3)
 
     # 윈도우 종료 시 on_closing 함수 실행
     win_main.protocol("WM_DELETE_WINDOW", on_closing)
