@@ -1,12 +1,17 @@
+import io
 import tkinter as tk
 import tkinter.font
 from tkinter import *
 from tkinter import filedialog
 import numpy as np
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageGrab
 import cv2
 import login
-from tkinter import messagebox
+import socket
+import base64
+
+HOST = "127.0.0.1"
+PORT = 12345
 
 image_path, image_tk = None, None
 image_size = (0, 0)
@@ -21,6 +26,8 @@ crop_end_x, crop_end_y = None, None
 current_x, current_y = None, None
 undo = -1
 update_count = 0
+image_captured = None
+
 
 def photoeditormain(username="admin", userversion="Premium"):
     def custom_askyesno(title, message, text1="종료", text2="로그아웃"):
@@ -51,6 +58,7 @@ def photoeditormain(username="admin", userversion="Premium"):
         def command2():
             dialog.result = False
             dialog.destroy()
+
         tk.Button(dialog, text=text2, command=command2).place(x=150, y=60)
 
         # 대화상자를 modal로 설정하여 다른 창을 클릭할 수 없게 함
@@ -60,11 +68,29 @@ def photoeditormain(username="admin", userversion="Premium"):
 
         # 대화상자가 닫힐 때 result 값을 반환
         return dialog.result
+
     def on_closing():
         result = custom_askyesno("종료", "프로그램을 종료하거나 로그아웃하시겠습니까?", "종료", "로그아웃")
         win_main.destroy()
         if not result:
             login.loginmain()
+
+    def temp_save():
+        global image_captured
+
+        # canvas의 이미지 캡쳐
+        canvas_x = canvas.winfo_rootx()
+        canvas_y = canvas.winfo_rooty()
+        canvas_width = canvas.winfo_width()
+        canvas_height = canvas.winfo_height()
+        image_captured = ImageGrab.grab((canvas_x, canvas_y, canvas_x + canvas_width, canvas_y + canvas_height))
+
+        temp_image = ImageTk.PhotoImage(resize_image(image_captured, 100))
+        canvas_temp.create_image(0, 0, anchor="nw", image=temp_image)
+        canvas_temp.image = temp_image  # 이미지 객체를 캔버스의 속성으로 유지
+
+    def temp_load():
+        update_image(image_captured)
 
     def resize_image(image, max_size):
         # 프레임 크기에 맞게 이미지 사이즈 재조정
@@ -87,7 +113,7 @@ def photoeditormain(username="admin", userversion="Premium"):
         # 이미지 파일 선택 대화상자 열기
         file_path = filedialog.askopenfilename(
             title="이미지 파일 선택",
-            filetypes=(("PNG 파일", "*.png"), ("JPEG 파일", "*.jpg"))
+            filetypes=(("JPG 파일", "*.jpg"), ("PNG 파일", "*.png"))
         )
 
         if file_path:
@@ -441,6 +467,9 @@ def photoeditormain(username="admin", userversion="Premium"):
         tk.Label(root, width=41, height=1, background="gray").place(x=20, y=y)
         tk.Label(root, width=41, height=1, background="white").place(x=20, y=y + 2)
 
+    # 소켓 생성
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
     # tkinter 윈도우 생성
     win_main = tk.Tk()
     win_main.title("Photo Editor")
@@ -543,11 +572,21 @@ def photoeditormain(username="admin", userversion="Premium"):
     create_button(button2_frame, "icon//icon_removeBG.png", green_filter, 225, 395)
     # create_button(button1_frame, "icon//icon_grayscale.png", image_grayscale, 0, 4)
 
+    create_title(button2_frame, "TempSave", 493)
+    create_line(button2_frame, 517)
+    canvas_temp = tk.Canvas(button2_frame, width=100, height=100, bg="white", borderwidth=1, relief="solid")
+    canvas_temp.place(x=110, y=525)
+    create_button(button2_frame, "icon//icon_save.png", temp_save, 75, 635)
+    create_button(button2_frame, "icon//icon_load.png", temp_load, 175, 635)
+
     # 윈도우 종료 시 on_closing 함수 실행
     win_main.protocol("WM_DELETE_WINDOW", on_closing)
 
     # 윈도우 실행
     win_main.mainloop()
+
+    # 소켓 종료
+    client_socket.close()
 
 
 if __name__ == "__main__":

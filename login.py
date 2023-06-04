@@ -97,6 +97,9 @@ def loginmain():
     # Tkinter 이벤트 루프 시작
     win_login.mainloop()
 
+    # 소켓 종료
+    client_socket.close()
+
 
 if __name__ == "__main__":
     loginmain()
