@@ -20,6 +20,7 @@ crop_start_x, crop_start_y = None, None
 crop_end_x, crop_end_y = None, None
 current_x, current_y = None, None
 undo = -1
+update_count = 0
 
 def photoeditormain(username="admin", userversion="Premium"):
     def custom_askyesno(title, message, text1="종료", text2="로그아웃"):
@@ -98,7 +99,7 @@ def photoeditormain(username="admin", userversion="Premium"):
             return file_path
 
     def update_image(new_image):
-        global image_tk, layer_ids, current_image, image_size
+        global image_tk, layer_ids, current_image, image_size, update_count
 
         # 이미지 리사이즈
         max_size = 700
@@ -121,28 +122,34 @@ def photoeditormain(username="admin", userversion="Premium"):
 
         # 작업 이력에 현재 이미지 추가
         undo_history.append(current_image.copy())
+        update_count += 1
 
     def undo():
-        global image_tk, layer_ids, current_image, undo_history, undo
-        if len(undo_history) >= 2:
-            undo -= 1
-            # 이전 작업 단계의 이미지 가져오기
-            previous_image = undo_history[undo]
+        global image_tk, layer_ids, current_image, undo_history, undo, update_count
+        if update_count <= 1:
+            pass
+        else:
+            if len(undo_history) >= 2:
+                update_count -= 1
+                undo -= 1
+                # 이전 작업 단계의 이미지 가져오기
+                previous_image = undo_history[undo]
 
-            # 현재 이미지 업데이트
-            current_image = previous_image
-            max_size = 700
-            resized_image = resize_image(current_image, max_size)
-            for layer_id in layer_ids:
-                canvas.delete(layer_id)
-            image_tk = ImageTk.PhotoImage(resized_image)
-            image_layer = canvas.create_image(0, 0, anchor="nw", image=image_tk)
-            layer_ids = [image_layer]
-            current_image = resized_image
+                # 현재 이미지 업데이트
+                current_image = previous_image
+                max_size = 700
+                resized_image = resize_image(current_image, max_size)
+                for layer_id in layer_ids:
+                    canvas.delete(layer_id)
+                image_tk = ImageTk.PhotoImage(resized_image)
+                image_layer = canvas.create_image(0, 0, anchor="nw", image=image_tk)
+                layer_ids = [image_layer]
+                current_image = resized_image
 
     def redo():
-        global image_tk, layer_ids, current_image, undo_history, undo
-        if len(undo_history) >= 2:
+        global image_tk, layer_ids, current_image, undo_history, undo, update_count
+        if len(undo_history) >= 1 and undo < len(undo_history) - 1 and undo < -1:
+            update_count += 1
             undo += 1
             # 이전 작업 단계의 이미지 가져오기
             next_image = undo_history[undo]
@@ -263,7 +270,7 @@ def photoeditormain(username="admin", userversion="Premium"):
         rotated_image = image.rotate(angle)
         update_image(rotated_image)
 
-    def rotate_45CW():
+    def rotate_45CCW():
         global image_tk, layer_ids, current_image
         # 현재 이미지 가져오기
         image = current_image
@@ -273,7 +280,7 @@ def photoeditormain(username="admin", userversion="Premium"):
         rotated_image = image.rotate(angle)
         update_image(rotated_image)
 
-    def rotate_45CCW():
+    def rotate_45CW():
         global image_tk, layer_ids, current_image
         # 현재 이미지 가져오기
         image = current_image
@@ -375,6 +382,46 @@ def photoeditormain(username="admin", userversion="Premium"):
         blur_image = cv2.GaussianBlur(Np_image, (5, 5), 0)
         blur_image = Image.fromarray(blur_image)
         update_image(blur_image)
+
+    def sepia_filter():
+        global image_tk, layer_ids, current_image
+        image = np.array(current_image)
+        sepia_matrix = np.array([[0.393, 0.769, 0.189],
+                                 [0.349, 0.686, 0.168],
+                                 [0.272, 0.534, 0.131]])
+        sepia_image = cv2.transform(image, sepia_matrix)
+        sepia_image = Image.fromarray(sepia_image.astype('uint8'))
+        update_image(sepia_image)
+
+    def red_filter():
+        global image_tk, layer_ids, current_image
+        image = np.array(current_image)
+        red_matrix = np.array([[1.2, 0, 0],
+                               [0, 0.8, 0],
+                               [0, 0, 0.8]])
+        red_image = cv2.transform(image, red_matrix)
+        red_image = Image.fromarray(red_image.astype('uint8'))
+        update_image(red_image)
+
+    def green_filter():
+        global image_tk, layer_ids, current_image
+        image = np.array(current_image)
+        green_matrix = np.array([[0.8, 0, 0],
+                                 [0, 1.2, 0],
+                                 [0, 0, 0.8]])
+        green_image = cv2.transform(image, green_matrix)
+        green_image = Image.fromarray(green_image.astype('uint8'))
+        update_image(green_image)
+
+    def blue_filter():
+        global image_tk, layer_ids, current_image
+        image = np.array(current_image)
+        blue_matrix = np.array([[0.8, 0, 0],
+                                [0, 0.8, 0],
+                                [0, 0, 1.2]])
+        blue_image = cv2.transform(image, blue_matrix)
+        blue_image = Image.fromarray(blue_image.astype('uint8'))
+        update_image(blue_image)
 
     def create_button(root, icon_path, command, x, y):
         # 이미지 로드
@@ -490,7 +537,10 @@ def photoeditormain(username="admin", userversion="Premium"):
     create_line(button2_frame, 287)
     create_button(button2_frame, "icon//icon_removeBG.png", grayscale, 25, 295)
     create_button(button2_frame, "icon//icon_removeBG.png", canny_edge, 125, 295)
-    create_button(button2_frame, "icon//icon_removeBG.png", canny_edge, 225, 295)
+    create_button(button2_frame, "icon//icon_removeBG.png", sepia_filter, 225, 295)
+    create_button(button2_frame, "icon//icon_removeBG.png", red_filter, 25, 395)
+    create_button(button2_frame, "icon//icon_removeBG.png", blue_filter, 125, 395)
+    create_button(button2_frame, "icon//icon_removeBG.png", green_filter, 225, 395)
     # create_button(button1_frame, "icon//icon_grayscale.png", image_grayscale, 0, 4)
 
     # 윈도우 종료 시 on_closing 함수 실행
