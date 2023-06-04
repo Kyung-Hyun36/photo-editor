@@ -352,12 +352,29 @@ def photoeditormain(username="admin", userversion="Premium"):
             convert_path = image_path.rsplit('.', 1)[0] + '.png'
             convert = 1
 
-    def image_grayscale():
+    def grayscale():
         global image_tk, layer_ids, current_image
         image_cv2 = np.array(current_image.convert("RGBA"))
         image_cv2 = cv2.cvtColor(image_cv2, cv2.COLOR_RGB2GRAY)
         image_gray = Image.fromarray(image_cv2)
         update_image(image_gray)
+
+    def canny_edge():
+        global image_tk, layer_ids, current_image
+        canny = np.array(current_image.convert("RGBA"))
+        canny = cv2.cvtColor(canny, cv2.COLOR_BGR2GRAY)
+        blurred = cv2.GaussianBlur(canny, (5, 5), 0)
+        canny_image = cv2.Canny(blurred, 50, 150)
+        canny_image = Image.fromarray(canny_image)
+        update_image(canny_image)
+
+    def gaus_blur():
+        global image_tk, layer_ids, current_image
+        image = current_image
+        Np_image = np.array(image)
+        blur_image = cv2.GaussianBlur(Np_image, (5, 5), 0)
+        blur_image = Image.fromarray(blur_image)
+        update_image(blur_image)
 
     def create_button(root, icon_path, command, x, y):
         # 이미지 로드
@@ -450,9 +467,9 @@ def photoeditormain(username="admin", userversion="Premium"):
 
     create_title(button1_frame, "Blur", 363)
     create_line(button1_frame, 387)
-    create_button(button1_frame, "icon//icon_blur.png", undo, 25, 395)
-    create_button(button1_frame, "icon//icon_blur.png", undo, 125, 395)
-    create_button(button1_frame, "icon//icon_blur.png", undo, 225, 395)
+    create_button(button1_frame, "icon//icon_blur.png", gaus_blur, 25, 395)
+    create_button(button1_frame, "icon//icon_blur.png", gaus_blur, 125, 395)
+    create_button(button1_frame, "icon//icon_blur.png", gaus_blur, 225, 395)
 
     create_title(button1_frame, "Etc.", 493)
     create_line(button1_frame, 517)
@@ -469,6 +486,11 @@ def photoeditormain(username="admin", userversion="Premium"):
     create_button(button2_frame, "icon//icon_add.png", undo, 25, 165)
     create_button(button2_frame, "icon//icon_removeBG.png", undo, 125, 165)
 
+    create_title(button2_frame, "Filter", 263)
+    create_line(button2_frame, 287)
+    create_button(button2_frame, "icon//icon_removeBG.png", grayscale, 25, 295)
+    create_button(button2_frame, "icon//icon_removeBG.png", canny_edge, 125, 295)
+    create_button(button2_frame, "icon//icon_removeBG.png", canny_edge, 225, 295)
     # create_button(button1_frame, "icon//icon_grayscale.png", image_grayscale, 0, 4)
 
     # 윈도우 종료 시 on_closing 함수 실행
