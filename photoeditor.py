@@ -17,15 +17,13 @@ image_path, image_tk = None, None
 image_size = (0, 0)
 layer_ids = []
 current_image = None
-undo_history = []
+undo_history, redo_history = [], []
 start_x, start_y = None, None
 convert = 0
 dot_positions = []
 crop_start_x, crop_start_y = None, None
 crop_end_x, crop_end_y = None, None
 current_x, current_y = None, None
-undo = -1
-update_count = 0
 image_captured = None
 
 
@@ -148,40 +146,35 @@ def photoeditormain(username="admin", userversion="Premium"):
 
         # 작업 이력에 현재 이미지 추가
         undo_history.append(current_image.copy())
-        update_count += 1
 
     def undo():
-        global image_tk, layer_ids, current_image, undo_history, undo, update_count
-        if update_count <= 1:
-            pass
-        else:
-            if len(undo_history) >= 2:
-                update_count -= 1
-                undo -= 1
-                # 이전 작업 단계의 이미지 가져오기
-                previous_image = undo_history[undo]
-
-                # 현재 이미지 업데이트
-                current_image = previous_image
-                max_size = 700
-                resized_image = resize_image(current_image, max_size)
-                for layer_id in layer_ids:
-                    canvas.delete(layer_id)
-                image_tk = ImageTk.PhotoImage(resized_image)
-                image_layer = canvas.create_image(0, 0, anchor="nw", image=image_tk)
-                layer_ids = [image_layer]
-                current_image = resized_image
-
-    def redo():
-        global image_tk, layer_ids, current_image, undo_history, undo, update_count
-        if len(undo_history) >= 1 and undo < len(undo_history) - 1 and undo < -1:
-            update_count += 1
-            undo += 1
+        global image_tk, layer_ids, current_image, undo_history
+        if len(undo_history) >= 2:
             # 이전 작업 단계의 이미지 가져오기
-            next_image = undo_history[undo]
+            last = undo_history.pop()
+            redo_history.append(last)
+            previous_image = undo_history[-1]
 
             # 현재 이미지 업데이트
-            current_image = next_image
+            current_image = previous_image
+            max_size = 700
+            resized_image = resize_image(current_image, max_size)
+            for layer_id in layer_ids:
+                canvas.delete(layer_id)
+            image_tk = ImageTk.PhotoImage(resized_image)
+            image_layer = canvas.create_image(0, 0, anchor="nw", image=image_tk)
+            layer_ids = [image_layer]
+            current_image = resized_image
+
+    def redo():
+        global image_tk, layer_ids, current_image, undo_history
+        if len(redo_history) >= 1:
+            # 이전 작업 단계의 이미지 가져오기
+            last = redo_history[-1].pop()
+            undo_history.append(last)
+
+            # 현재 이미지 업데이트
+            current_image = last
             max_size = 700
             resized_image = resize_image(current_image, max_size)
             for layer_id in layer_ids:
@@ -454,6 +447,40 @@ def photoeditormain(username="admin", userversion="Premium"):
         blue_image = Image.fromarray(blue_image.astype('uint8'))
         update_image(blue_image)
 
+    def remove_background():
+        global image_tk, layer_ids, current_image
+        image = np.array(current_image)
+
+        # 이미지 데이터 타입 및 채널 수 변경
+        image = image.astype(np.uint8)
+        image = image[:, :, :3]  # 알파 채널 제거
+
+        # 이미지를 RGB로 변환
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+        # 초기 마스크 생성
+        mask = np.zeros(image.shape[:2], np.uint8)
+
+        # 관심 영역 지정
+        rect = (50, 50, 600, 600)
+
+        # GrabCut 알고리즘 적용을 위한 flags 설정
+        flags = cv2.GC_INIT_WITH_RECT
+
+        # 배경인지 확실하지 않은 픽셀을 제거
+        mask, bgd_model, fgd_model = cv2.grabCut(image, mask, rect, None, None, 5, flags)
+
+        # 배경인지 확실하지 않은 픽셀을 제거한 마스크 생성
+        mask = np.where((mask == cv2.GC_PR_BGD) | (mask == cv2.GC_BGD), 0, 1).astype('uint8')
+
+        # 마스크를 이용하여 배경 제거
+        result = image * mask[:, :, np.newaxis]
+
+        # 색상 복원
+        result = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+
+        update_image(Image.fromarray(result))
+
     def create_button(root, icon_path, command, x, y):
         # 이미지 로드
         image = resize_image(Image.open(icon_path), 90)
@@ -565,7 +592,7 @@ def photoeditormain(username="admin", userversion="Premium"):
     create_title(button2_frame, "Add & Remove", 133)
     create_line(button2_frame, 157)
     create_button(button2_frame, "icon//icon_add.png", undo, 25, 165)
-    create_button(button2_frame, "icon//icon_removeBG.png", undo, 125, 165)
+    create_button(button2_frame, "icon//icon_removeBG.png", remove_background, 125, 165)
 
     create_title(button2_frame, "Filter", 263)
     create_line(button2_frame, 287)
