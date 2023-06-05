@@ -242,7 +242,12 @@ def photoeditormain(username="admin", userversion="Premium"):
     def image_crop():
         global crop_start_x, crop_start_y, crop_end_x, crop_end_y
         if crop_start_x is not None and crop_start_y is not None and crop_end_x is not None and crop_end_y is not None:
-            cropped_image = current_image.crop((crop_start_x, crop_start_y, crop_end_x, crop_end_y))
+            min_x = min(crop_start_x, crop_end_x)
+            max_x = max(crop_start_x, crop_end_x)
+            min_y = min(crop_start_y, crop_end_y)
+            max_y = max(crop_start_y, crop_end_y)
+
+            cropped_image = current_image.crop((min_x, min_y, max_x, max_y))
             update_image(cropped_image)
 
     def draw_rectangle():
