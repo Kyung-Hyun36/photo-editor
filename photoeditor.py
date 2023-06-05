@@ -170,7 +170,7 @@ def photoeditormain(username="admin", userversion="Premium"):
         global image_tk, layer_ids, current_image, undo_history
         if len(redo_history) >= 1:
             # 이전 작업 단계의 이미지 가져오기
-            last = redo_history[-1].pop()
+            last = redo_history.pop()
             undo_history.append(last)
 
             # 현재 이미지 업데이트
