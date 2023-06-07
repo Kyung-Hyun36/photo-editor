@@ -73,6 +73,17 @@ def photoeditormain(username="admin", userversion="Premium"):
         if not result:
             login.loginmain()
 
+    def update_btn_state():
+        if len(undo_history) >= 2:
+            btn_undo['state'] = NORMAL
+        else:
+            btn_undo['state'] = DISABLED
+
+        if redo_history:
+            btn_redo['state'] = NORMAL
+        else:
+            btn_redo['state'] = DISABLED
+
     def temp_save():
         global image_captured
 
@@ -89,6 +100,8 @@ def photoeditormain(username="admin", userversion="Premium"):
 
     def temp_load():
         update_image(image_captured)
+        redo_history.clear()
+        update_btn_state()
 
     def resize_image(image, max_size):
         # 프레임 크기에 맞게 이미지 사이즈 재조정
@@ -119,8 +132,10 @@ def photoeditormain(username="admin", userversion="Premium"):
             image_path = file_path
             image = Image.open(image_path)
             update_image(image)
-
+            redo_history.clear()
+            update_btn_state()
             return file_path
+
 
     def update_image(new_image):
         global image_tk, layer_ids, current_image, image_size, update_count
@@ -166,6 +181,8 @@ def photoeditormain(username="admin", userversion="Premium"):
             layer_ids = [image_layer]
             current_image = resized_image
 
+        update_btn_state()
+
     def redo():
         global image_tk, layer_ids, current_image, undo_history
         if len(redo_history) >= 1:
@@ -183,6 +200,8 @@ def photoeditormain(username="admin", userversion="Premium"):
             image_layer = canvas.create_image(0, 0, anchor="nw", image=image_tk)
             layer_ids = [image_layer]
             current_image = resized_image
+
+        update_btn_state()
 
     # ...
     def mouse_event(canvas, event):
@@ -273,6 +292,8 @@ def photoeditormain(username="admin", userversion="Premium"):
         canvas.bind("<ButtonPress-1>", clicked)  # 마우스 왼쪽 버튼을 눌렀을 때 crop 시작 좌표를 기록합니다.
         canvas.bind("<ButtonRelease-1>", released)  # 마우스 왼쪽 버튼을 놓았을 때 crop 종료 좌표를 기록하고, 해당 영역을 잘라냅니다.
         canvas.bind("<Motion>", check_cursor_position)
+        redo_history.clear()
+        update_btn_state()
 
     def rotate_90CCW():
         global image_tk, layer_ids, current_image
@@ -283,6 +304,8 @@ def photoeditormain(username="admin", userversion="Premium"):
         angle = 90
         rotated_image = image.rotate(angle)
         update_image(rotated_image)
+        redo_history.clear()
+        update_btn_state()
 
     def rotate_90CW():
         global image_tk, layer_ids, current_image
@@ -293,6 +316,8 @@ def photoeditormain(username="admin", userversion="Premium"):
         angle = -90
         rotated_image = image.rotate(angle)
         update_image(rotated_image)
+        redo_history.clear()
+        update_btn_state()
 
     def rotate_45CCW():
         global image_tk, layer_ids, current_image
@@ -303,6 +328,8 @@ def photoeditormain(username="admin", userversion="Premium"):
         angle = 45
         rotated_image = image.rotate(angle)
         update_image(rotated_image)
+        redo_history.clear()
+        update_btn_state()
 
     def rotate_45CW():
         global image_tk, layer_ids, current_image
@@ -313,6 +340,8 @@ def photoeditormain(username="admin", userversion="Premium"):
         angle = -45
         rotated_image = image.rotate(angle)
         update_image(rotated_image)
+        redo_history.clear()
+        update_btn_state()
 
     def rotate_user():
         global image_tk, layer_ids, current_image
@@ -323,6 +352,8 @@ def photoeditormain(username="admin", userversion="Premium"):
         angle = int(angle_entry.get())
         rotated_image = image.rotate(angle)
         update_image(rotated_image)
+        redo_history.clear()
+        update_btn_state()
 
     def decrease_brightness():
         global image_tk, layer_ids, current_image
@@ -335,6 +366,8 @@ def photoeditormain(username="admin", userversion="Premium"):
         image[:, :, 2] = np.clip(image[:, :, 2], 1, 255)  # v값 255 이상일 경우 최대값인 255로 고정
         image = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
         update_image(Image.fromarray(image))
+        redo_history.clear()
+        update_btn_state()
 
     def increase_brightness():
         global image_tk, layer_ids, current_image
@@ -347,6 +380,8 @@ def photoeditormain(username="admin", userversion="Premium"):
         image[:, :, 2] = np.clip(image[:, :, 2], 1, 255)  # v값 255 이상일 경우 최대값인 255로 고정
         image = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
         update_image(Image.fromarray(image))
+        redo_history.clear()
+        update_btn_state()
 
     def save_image():
         global current_image, image_path, convert
@@ -389,6 +424,8 @@ def photoeditormain(username="admin", userversion="Premium"):
         image_cv2 = cv2.cvtColor(image_cv2, cv2.COLOR_RGB2GRAY)
         image_gray = Image.fromarray(image_cv2)
         update_image(image_gray)
+        redo_history.clear()
+        update_btn_state()
 
     def canny_edge():
         global image_tk, layer_ids, current_image
@@ -406,6 +443,8 @@ def photoeditormain(username="admin", userversion="Premium"):
         blur_image = cv2.GaussianBlur(Np_image, (5, 5), 0)
         blur_image = Image.fromarray(blur_image)
         update_image(blur_image)
+        redo_history.clear()
+        update_btn_state()
 
     def sepia_filter():
         global image_tk, layer_ids, current_image
@@ -480,16 +519,19 @@ def photoeditormain(username="admin", userversion="Premium"):
         result = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
 
         update_image(Image.fromarray(result))
+        redo_history.clear()
+        update_btn_state()
 
-    def create_button(root, icon_path, command, x, y):
+    def create_button(root, icon_path, icon_size, command, x, y):
         # 이미지 로드
-        image = resize_image(Image.open(icon_path), 90)
+        image = resize_image(Image.open(icon_path), icon_size)
         icon = ImageTk.PhotoImage(image)
 
         # 버튼 생성
         button = tk.Button(root, image=icon, command=command, background="white", borderwidth=0, highlightthickness=0)
         button.image = icon  # 사진에 대한 참조 유지
         button.place(x=x, y=y)
+        return button
 
     def create_title(root, title, y):
         font_title = tkinter.font.Font(family="맑은 고딕", size=12, weight="bold")
@@ -555,48 +597,50 @@ def photoeditormain(username="admin", userversion="Premium"):
     # bind_event()
 
     # 버튼 생성
-    create_button(user_frame, "icon//icon_load.png", load_image, 1000, 0)
-    create_button(user_frame, "icon//icon_save.png", save_image, 1100, 0)
+    create_button(user_frame, "icon//icon_load.png", 90, load_image, 1000, 0)
+    create_button(user_frame, "icon//icon_save.png", 90, save_image, 1100, 0)
 
     create_title(button1_frame, "Rotate", 3)
     create_line(button1_frame, 27)
-    create_button(button1_frame, "icon//icon_rotate45CW.png", rotate_45CW, 25, 35)
-    create_button(button1_frame, "icon//icon_rotate45CCW.png", rotate_45CCW, 125, 35)
-    create_button(button1_frame, "icon//icon_rotate90CW.png", rotate_90CW, 25, 135)
-    create_button(button1_frame, "icon//icon_rotate90CCW.png", rotate_90CCW, 125, 135)
-    create_button(button1_frame, "icon//icon_rotate90CCW.png", rotate_user, 225, 75)
+    create_button(button1_frame, "icon//icon_rotate45CW.png", 90, rotate_45CW, 25, 35)
+    create_button(button1_frame, "icon//icon_rotate45CCW.png", 90, rotate_45CCW, 125, 35)
+    create_button(button1_frame, "icon//icon_rotate90CW.png", 90, rotate_90CW, 25, 135)
+    create_button(button1_frame, "icon//icon_rotate90CCW.png", 90, rotate_90CCW, 125, 135)
+    create_button(button1_frame, "icon//icon_rotate90CCW.png", 90, rotate_user, 225, 75)
     angle_entry = Entry(button1_frame, width=10, background="gray")
     angle_entry.place(x=233, y=170)
 
     create_title(button1_frame, "Adjust Brightness", 233)
     create_line(button1_frame, 257)
-    create_button(button1_frame, "icon//icon_brightness.png", decrease_brightness, 25, 265)
-    create_button(button1_frame, "icon//icon_brightness.png", increase_brightness, 125, 265)
+    create_button(button1_frame, "icon//icon_brightness.png", 90, decrease_brightness, 25, 265)
+    create_button(button1_frame, "icon//icon_brightness.png", 90, increase_brightness, 125, 265)
 
     create_title(button1_frame, "Blur", 363)
     create_line(button1_frame, 387)
-    create_button(button1_frame, "icon//icon_blur.png", gaus_blur, 25, 395)
-    create_button(button1_frame, "icon//icon_blur.png", gaus_blur, 125, 395)
-    create_button(button1_frame, "icon//icon_blur.png", gaus_blur, 225, 395)
+    create_button(button1_frame, "icon//icon_blur.png", 90, gaus_blur, 25, 395)
+    create_button(button1_frame, "icon//icon_blur.png", 90, gaus_blur, 125, 395)
+    create_button(button1_frame, "icon//icon_blur.png", 90, gaus_blur, 225, 395)
 
     create_title(button1_frame, "Etc.", 493)
     create_line(button1_frame, 517)
-    create_button(button1_frame, "icon//icon_crop.png", bind_event, 25, 525)
-    create_button(button1_frame, "icon//icon_convert.png", path_convert, 125, 525)
+    create_button(button1_frame, "icon//icon_crop.png", 90, bind_event, 25, 525)
+    create_button(button1_frame, "icon//icon_convert.png", 90, path_convert, 125, 525)
 
     create_title(button2_frame, "Undo & Redo", 3)
     create_line(button2_frame, 27)
-    create_button(button2_frame, "icon//icon_undo.png", undo, 25, 35)
-    create_button(button2_frame, "icon//icon_redo.png", redo, 125, 35)
+    btn_undo = create_button(button2_frame, "icon//icon_undo.png", 90, undo, 25, 35)
+    btn_undo['state'] = DISABLED
+    btn_redo = create_button(button2_frame, "icon//icon_redo.png", 90, redo, 125, 35)
+    btn_redo['state'] = DISABLED
 
     create_title(button2_frame, "Add & Remove", 133)
     create_line(button2_frame, 157)
-    create_button(button2_frame, "icon//icon_add.png", undo, 25, 165)
-    create_button(button2_frame, "icon//icon_removeBG.png", remove_background, 125, 165)
+    create_button(button2_frame, "icon//icon_add.png", 90, undo, 25, 165)
+    create_button(button2_frame, "icon//icon_removeBG.png", 90, remove_background, 125, 165)
 
     create_title(button2_frame, "Filter", 263)
     create_line(button2_frame, 287)
-    create_button(button2_frame, "icon//icon_gray.png", grayscale, 25, 295)
+    create_button(button2_frame, "icon//icon_gray.png", 200, grayscale, 25, 295)
     #create_button(button2_frame, "icon//icon_removeBG.png", canny_edge, 125, 295)
     #create_button(button2_frame, "icon//icon_removeBG.png", sepia_filter, 225, 295)
     #create_button(button2_frame, "icon//icon_removeBG.png", red_filter, 25, 395)
@@ -608,8 +652,8 @@ def photoeditormain(username="admin", userversion="Premium"):
     create_line(button2_frame, 517)
     canvas_temp = tk.Canvas(button2_frame, width=100, height=100, bg="white", borderwidth=1, relief="solid")
     canvas_temp.place(x=110, y=525)
-    create_button(button2_frame, "icon//icon_save.png", temp_save, 75, 635)
-    create_button(button2_frame, "icon//icon_load.png", temp_load, 175, 635)
+    create_button(button2_frame, "icon//icon_save.png", 90, temp_save, 75, 635)
+    create_button(button2_frame, "icon//icon_load.png", 90, temp_load, 175, 635)
 
     # 윈도우 종료 시 on_closing 함수 실행
     win_main.protocol("WM_DELETE_WINDOW", on_closing)
