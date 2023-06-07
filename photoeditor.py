@@ -1,4 +1,3 @@
-import io
 import tkinter as tk
 import tkinter.font
 from tkinter import *
@@ -10,6 +9,7 @@ import login
 import socket
 import urllib.request
 from datetime import datetime, timedelta
+import base64
 
 HOST = "127.0.0.1"
 PORT = 12345
@@ -93,7 +93,6 @@ def photoeditormain(username="admin", userversion="Premium"):
         global image_captured
         utc_time = datetime.strptime(page.headers['Date'], '%a, %d %b %Y %H:%M:%S %Z')
         kst_time = utc_time + timedelta(hours=9)
-        print(kst_time)
 
         # canvas의 이미지 캡쳐
         canvas_x = canvas.winfo_rootx()
@@ -102,11 +101,20 @@ def photoeditormain(username="admin", userversion="Premium"):
         canvas_height = canvas.winfo_height()
         image_captured = ImageGrab.grab((canvas_x, canvas_y, canvas_x + canvas_width, canvas_y + canvas_height))
 
+        # canvas_image = canvas.postscript(colormode="color")
+        # base64_encoded_image = base64.b64encode(canvas_image.encode()).decode("utf-8")
+        # print(base64_encoded_image)
+
+        # client_socket.sendto('save'.encode(), (HOST, PORT))
+        # client_socket.sendto(base64_encoded_image.encode(), (HOST, PORT))
+
         temp_image = ImageTk.PhotoImage(resize_image(image_captured, 100))
         canvas_temp.create_image(0, 0, anchor="nw", image=temp_image)
         canvas_temp.image = temp_image  # 이미지 객체를 캔버스의 속성으로 유지
 
     def temp_load():
+        # client_socket.sendto('save'.encode(), (HOST, PORT))
+        # image, address = client_socket.recvfrom(1024)
         update_image(image_captured)
         redo_history.clear()
         update_btn_state()
@@ -218,17 +226,6 @@ def photoeditormain(username="admin", userversion="Premium"):
             return (canvas.winfo_pointerx() - canvas.winfo_rootx(),
                     canvas.winfo_pointery() - canvas.winfo_rooty())
 
-    def image_cut():
-        global crop_start_x, crop_start_y, crop_end_x, crop_end_y
-        if crop_start_x is not None and crop_start_y is not None and crop_end_x is not None and crop_end_y is not None:
-            min_x = min(crop_start_x, crop_end_x)
-            max_x = max(crop_start_x, crop_end_x)
-            min_y = min(crop_start_y, crop_end_y)
-            max_y = max(crop_start_y, crop_end_y)
-
-            cropped_image = current_image.crop((min_x, min_y, max_x, max_y))
-            update_image(cropped_image)
-
     def draw_rectangle():
         global crop_start_x, crop_start_y, current_x, current_y
         if crop_start_x is not None and crop_start_y is not None and current_x is not None and current_y is not None:
@@ -270,22 +267,33 @@ def photoeditormain(username="admin", userversion="Premium"):
     def released(event):
         global crop_end_x, crop_end_y, cursor
         crop_end_x, crop_end_y = event.x, event.y
-        canvas.delete("rectangle")
-        image_cut()
+
+    def image_area():
+        global cursor
+        cursor = 1
         canvas.bind("<Motion>", check_cursor_position)
+        canvas.bind("<B1-Motion>", drag)  # 마우스 움직임 이벤트에 check_cursor_position 함수를 바인딩합니다.
+        canvas.bind("<ButtonPress-1>", clicked)  # 마우스 왼쪽 버튼을 눌렀을 때 crop 시작 좌표를 기록합니다.
+        canvas.bind("<ButtonRelease-1>", released)  # 마우스 왼쪽 버튼을 놓았을 때 crop 종료 좌표를 기록하고, 해당 영역을 잘라냅니다.
+
+    def image_crop():
+        global crop_start_x, crop_start_y, crop_end_x, crop_end_y, cursor
+        if crop_start_x is not None and crop_start_y is not None and crop_end_x is not None and crop_end_y is not None:
+            min_x = min(crop_start_x, crop_end_x)
+            max_x = max(crop_start_x, crop_end_x)
+            min_y = min(crop_start_y, crop_end_y)
+            max_y = max(crop_start_y, crop_end_y)
+
+            cropped_image = current_image.crop((min_x, min_y, max_x, max_y))
+            update_image(cropped_image)
+
+        canvas.delete("rectangle")
+        canvas.unbind("<Motion>")
         canvas.unbind("<B1-Motion>")
         canvas.unbind("<ButtonPress-1>")
         canvas.unbind("<ButtonRelease-1>")
         cursor = 0  # 마우스 커서 모양을 원래대로 복구
         check_cursor_position(None)
-
-    def image_crop():
-        global cursor
-        canvas.bind("<Motion>", check_cursor_position)
-        canvas.bind("<B1-Motion>", drag)  # 마우스 움직임 이벤트에 check_cursor_position 함수를 바인딩합니다.
-        canvas.bind("<ButtonPress-1>", clicked)  # 마우스 왼쪽 버튼을 눌렀을 때 crop 시작 좌표를 기록합니다.
-        canvas.bind("<ButtonRelease-1>", released)  # 마우스 왼쪽 버튼을 놓았을 때 crop 종료 좌표를 기록하고, 해당 영역을 잘라냅니다.
-        cursor = 1
         redo_history.clear()
         update_btn_state()
 
@@ -629,7 +637,7 @@ def photoeditormain(username="admin", userversion="Premium"):
 
     create_title(button1_frame, "Etc.", 493)
     create_line(button1_frame, 517)
-    create_button(button1_frame, "icon//icon_crop.png", 90, image_crop, 25, 525)
+    create_button(button1_frame, "icon//icon_removeBG.png", 90, remove_background, 25, 525)
     create_button(button1_frame, "icon//icon_convert.png", 90, path_convert, 125, 525)
 
     create_title(button2_frame, "Undo & Redo", 3)
@@ -639,10 +647,11 @@ def photoeditormain(username="admin", userversion="Premium"):
     btn_redo = create_button(button2_frame, "icon//icon_redo.png", 90, redo, 125, 35)
     btn_redo['state'] = DISABLED
 
-    create_title(button2_frame, "Add & Remove", 133)
+    create_title(button2_frame, "Add & Crop", 133)
     create_line(button2_frame, 157)
-    create_button(button2_frame, "icon//icon_add.png", 90, undo, 25, 165)
-    create_button(button2_frame, "icon//icon_removeBG.png", 90, remove_background, 125, 165)
+    create_button(button2_frame, "icon//icon_area.png", 90, image_area, 25, 165)
+    create_button(button2_frame, "icon//icon_add.png", 90, undo, 125, 165)
+    create_button(button2_frame, "icon//icon_crop.png", 90, image_crop, 225, 165)
 
     create_title(button2_frame, "Filter", 263)
     create_line(button2_frame, 287)
