@@ -420,10 +420,13 @@ def photoeditormain(username="admin", userversion="Premium"):
 
     def grayscale():
         global image_tk, layer_ids, current_image
-        image_cv2 = np.array(current_image.convert("RGBA"))
-        image_cv2 = cv2.cvtColor(image_cv2, cv2.COLOR_RGB2GRAY)
-        image_gray = Image.fromarray(image_cv2)
-        update_image(image_gray)
+        image = np.array(current_image)
+        gray_matrix = np.array([[0.333, 0.333, 0.333],
+                                [0.333, 0.333, 0.333],
+                                [0.333, 0.333, 0.333]])
+        gray_image = cv2.transform(image, gray_matrix)
+        gray_image = Image.fromarray(gray_image.astype('uint8'))
+        update_image(gray_image)
         redo_history.clear()
         update_btn_state()
 
@@ -435,6 +438,8 @@ def photoeditormain(username="admin", userversion="Premium"):
         canny_image = cv2.Canny(blurred, 50, 150)
         canny_image = Image.fromarray(canny_image)
         update_image(canny_image)
+        redo_history.clear()
+        update_btn_state()
 
     def gaus_blur():
         global image_tk, layer_ids, current_image
@@ -455,6 +460,8 @@ def photoeditormain(username="admin", userversion="Premium"):
         sepia_image = cv2.transform(image, sepia_matrix)
         sepia_image = Image.fromarray(sepia_image.astype('uint8'))
         update_image(sepia_image)
+        redo_history.clear()
+        update_btn_state()
 
     def red_filter():
         global image_tk, layer_ids, current_image
@@ -465,6 +472,8 @@ def photoeditormain(username="admin", userversion="Premium"):
         red_image = cv2.transform(image, red_matrix)
         red_image = Image.fromarray(red_image.astype('uint8'))
         update_image(red_image)
+        redo_history.clear()
+        update_btn_state()
 
     def green_filter():
         global image_tk, layer_ids, current_image
@@ -475,6 +484,8 @@ def photoeditormain(username="admin", userversion="Premium"):
         green_image = cv2.transform(image, green_matrix)
         green_image = Image.fromarray(green_image.astype('uint8'))
         update_image(green_image)
+        redo_history.clear()
+        update_btn_state()
 
     def blue_filter():
         global image_tk, layer_ids, current_image
@@ -485,6 +496,8 @@ def photoeditormain(username="admin", userversion="Premium"):
         blue_image = cv2.transform(image, blue_matrix)
         blue_image = Image.fromarray(blue_image.astype('uint8'))
         update_image(blue_image)
+        redo_history.clear()
+        update_btn_state()
 
     def remove_background():
         global image_tk, layer_ids, current_image
@@ -602,11 +615,11 @@ def photoeditormain(username="admin", userversion="Premium"):
 
     create_title(button1_frame, "Rotate", 3)
     create_line(button1_frame, 27)
-    create_button(button1_frame, "icon//icon_rotate45CW.png", rotate_45CW, 25, 35)
-    create_button(button1_frame, "icon//icon_rotate45CCW.png", rotate_45CCW, 125, 35)
-    create_button(button1_frame, "icon//icon_rotate90CW.png", rotate_90CW, 25, 135)
-    create_button(button1_frame, "icon//icon_rotate90CCW.png", rotate_90CCW, 125, 135)
-    create_button(button1_frame, "icon//icon_rotateuser.png", rotate_user, 225, 75)
+    create_button(button1_frame, "icon//icon_rotate45CW.png", 90, rotate_45CW, 25, 35)
+    create_button(button1_frame, "icon//icon_rotate45CCW.png", 90, rotate_45CCW, 125, 35)
+    create_button(button1_frame, "icon//icon_rotate90CW.png", 90, rotate_90CW, 25, 135)
+    create_button(button1_frame, "icon//icon_rotate90CCW.png", 90, rotate_90CCW, 125, 135)
+    create_button(button1_frame, "icon//icon_rotateuser.png", 90, rotate_user, 225, 75)
     angle_entry = Entry(button1_frame, width=10, background="gray")
     angle_entry.place(x=233, y=170)
 
@@ -640,13 +653,12 @@ def photoeditormain(username="admin", userversion="Premium"):
 
     create_title(button2_frame, "Filter", 263)
     create_line(button2_frame, 287)
-    create_button(button2_frame, "icon//icon_gray.png", 200, grayscale, 25, 295)
-    #create_button(button2_frame, "icon//icon_removeBG.png", canny_edge, 125, 295)
-    #create_button(button2_frame, "icon//icon_removeBG.png", sepia_filter, 225, 295)
-    #create_button(button2_frame, "icon//icon_removeBG.png", red_filter, 25, 395)
-    #create_button(button2_frame, "icon//icon_removeBG.png", blue_filter, 125, 395)
-    #create_button(button2_frame, "icon//icon_removeBG.png", green_filter, 225, 395)
-    # create_button(button1_frame, "icon//icon_grayscale.png", image_grayscale, 0, 4)
+    create_button(button2_frame, "icon//icon_gray.png", 150, grayscale, 25, 295)
+    create_button(button2_frame, "icon//icon_cannyedge.png", 150, canny_edge, 180, 295)
+    create_button(button2_frame, "icon//icon_sepia.png", 150, sepia_filter, 25, 355)
+    create_button(button2_frame, "icon//icon_red.png", 150, red_filter, 180, 355)
+    create_button(button2_frame, "icon//icon_blue.png", 150, blue_filter, 25, 415)
+    create_button(button2_frame, "icon//icon_green.png", 150, green_filter, 180, 415)
 
     create_title(button2_frame, "TempSave", 493)
     create_line(button2_frame, 517)
