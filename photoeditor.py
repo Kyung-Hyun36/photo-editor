@@ -596,12 +596,12 @@ def photoeditormain(username="admin", userversion="Premium"):
 
     create_title(button2_frame, "Filter", 263)
     create_line(button2_frame, 287)
-    create_button(button2_frame, "icon//icon_removeBG.png", grayscale, 25, 295)
-    create_button(button2_frame, "icon//icon_removeBG.png", canny_edge, 125, 295)
-    create_button(button2_frame, "icon//icon_removeBG.png", sepia_filter, 225, 295)
-    create_button(button2_frame, "icon//icon_removeBG.png", red_filter, 25, 395)
-    create_button(button2_frame, "icon//icon_removeBG.png", blue_filter, 125, 395)
-    create_button(button2_frame, "icon//icon_removeBG.png", green_filter, 225, 395)
+    create_button(button2_frame, "icon//icon_gray.png", grayscale, 25, 295)
+    #create_button(button2_frame, "icon//icon_removeBG.png", canny_edge, 125, 295)
+    #create_button(button2_frame, "icon//icon_removeBG.png", sepia_filter, 225, 295)
+    #create_button(button2_frame, "icon//icon_removeBG.png", red_filter, 25, 395)
+    #create_button(button2_frame, "icon//icon_removeBG.png", blue_filter, 125, 395)
+    #create_button(button2_frame, "icon//icon_removeBG.png", green_filter, 225, 395)
     # create_button(button1_frame, "icon//icon_grayscale.png", image_grayscale, 0, 4)
 
     create_title(button2_frame, "TempSave", 493)
