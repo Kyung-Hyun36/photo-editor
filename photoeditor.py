@@ -8,10 +8,14 @@ from PIL import Image, ImageTk, ImageGrab
 import cv2
 import login
 import socket
-import base64
+import urllib.request
+from datetime import datetime, timedelta
 
 HOST = "127.0.0.1"
 PORT = 12345
+
+url = 'https://www.google.com/'
+page = urllib.request.urlopen(url)
 
 image_path, image_tk = None, None
 image_size = (0, 0)
@@ -86,6 +90,9 @@ def photoeditormain(username="admin", userversion="Premium"):
 
     def temp_save():
         global image_captured
+        utc_time = datetime.strptime(page.headers['Date'], '%a, %d %b %Y %H:%M:%S %Z')
+        kst_time = utc_time + timedelta(hours=9)
+        print(kst_time)
 
         # canvas의 이미지 캡쳐
         canvas_x = canvas.winfo_rootx()
