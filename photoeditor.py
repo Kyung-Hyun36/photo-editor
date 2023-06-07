@@ -602,11 +602,11 @@ def photoeditormain(username="admin", userversion="Premium"):
 
     create_title(button1_frame, "Rotate", 3)
     create_line(button1_frame, 27)
-    create_button(button1_frame, "icon//icon_rotate45CW.png", 90, rotate_45CW, 25, 35)
-    create_button(button1_frame, "icon//icon_rotate45CCW.png", 90, rotate_45CCW, 125, 35)
-    create_button(button1_frame, "icon//icon_rotate90CW.png", 90, rotate_90CW, 25, 135)
-    create_button(button1_frame, "icon//icon_rotate90CCW.png", 90, rotate_90CCW, 125, 135)
-    create_button(button1_frame, "icon//icon_rotate90CCW.png", 90, rotate_user, 225, 75)
+    create_button(button1_frame, "icon//icon_rotate45CW.png", rotate_45CW, 25, 35)
+    create_button(button1_frame, "icon//icon_rotate45CCW.png", rotate_45CCW, 125, 35)
+    create_button(button1_frame, "icon//icon_rotate90CW.png", rotate_90CW, 25, 135)
+    create_button(button1_frame, "icon//icon_rotate90CCW.png", rotate_90CCW, 125, 135)
+    create_button(button1_frame, "icon//icon_rotateuser.png", rotate_user, 225, 75)
     angle_entry = Entry(button1_frame, width=10, background="gray")
     angle_entry.place(x=233, y=170)
 
