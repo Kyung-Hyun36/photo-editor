@@ -29,6 +29,7 @@ crop_start_x, crop_start_y = None, None
 crop_end_x, crop_end_y = None, None
 current_x, current_y = None, None
 image_captured = None
+cursor = 1
 
 
 def photoeditormain(username="admin", userversion="Premium"):
@@ -217,21 +218,6 @@ def photoeditormain(username="admin", userversion="Premium"):
             return (canvas.winfo_pointerx() - canvas.winfo_rootx(),
                     canvas.winfo_pointery() - canvas.winfo_rooty())
 
-    def check_cursor_position(event):
-        image_x, image_y = 0, 0
-        image_width, image_height = image_size[0], image_size[1]
-
-        if event:
-            x, y = mouse_event(canvas, event)
-        else:
-            x, y = mouse_event(canvas, None)
-
-        # 이미지 영역에 마우스 커서가 닿았는지 확인합니다.
-        if x >= image_x and x <= image_x + image_width and y >= image_y and y <= image_y + image_height:
-            canvas.config(cursor="crosshair")
-        else:
-            canvas.config(cursor="")
-
     def image_cut():
         global crop_start_x, crop_start_y, crop_end_x, crop_end_y
         if crop_start_x is not None and crop_start_y is not None and crop_end_x is not None and crop_end_y is not None:
@@ -262,21 +248,44 @@ def photoeditormain(username="admin", userversion="Premium"):
         global crop_start_x, crop_start_y
         crop_start_x, crop_start_y = event.x, event.y
 
+    def check_cursor_position(event):
+        global cursor
+        image_x, image_y = 0, 0
+        image_width, image_height = image_size[0], image_size[1]
+
+        if event:
+            x, y = mouse_event(canvas, event)
+        else:
+            x, y = mouse_event(canvas, None)
+
+        if cursor == 1:
+            # 이미지 영역에 마우스 커서가 닿았는지 확인합니다.
+            if x >= image_x and x <= image_x + image_width and y >= image_y and y <= image_y + image_height:
+                canvas.config(cursor="crosshair")
+            else:
+                canvas.config(cursor="")
+        else:
+            canvas.config(cursor="")
+
     def released(event):
-        global crop_end_x, crop_end_y
+        global crop_end_x, crop_end_y, cursor
         crop_end_x, crop_end_y = event.x, event.y
         canvas.delete("rectangle")
         image_cut()
-        canvas.unbind("<Motion>")
+        canvas.bind("<Motion>", check_cursor_position)
         canvas.unbind("<B1-Motion>")
         canvas.unbind("<ButtonPress-1>")
         canvas.unbind("<ButtonRelease-1>")
+        cursor = 0  # 마우스 커서 모양을 원래대로 복구
+        check_cursor_position(None)
 
     def image_crop():
+        global cursor
         canvas.bind("<Motion>", check_cursor_position)
         canvas.bind("<B1-Motion>", drag)  # 마우스 움직임 이벤트에 check_cursor_position 함수를 바인딩합니다.
         canvas.bind("<ButtonPress-1>", clicked)  # 마우스 왼쪽 버튼을 눌렀을 때 crop 시작 좌표를 기록합니다.
         canvas.bind("<ButtonRelease-1>", released)  # 마우스 왼쪽 버튼을 놓았을 때 crop 종료 좌표를 기록하고, 해당 영역을 잘라냅니다.
+        cursor = 1
         redo_history.clear()
         update_btn_state()
 
