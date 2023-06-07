@@ -143,7 +143,6 @@ def photoeditormain(username="admin", userversion="Premium"):
             update_btn_state()
             return file_path
 
-
     def update_image(new_image):
         global image_tk, layer_ids, current_image, image_size, update_count
 
@@ -218,31 +217,6 @@ def photoeditormain(username="admin", userversion="Premium"):
             return (canvas.winfo_pointerx() - canvas.winfo_rootx(),
                     canvas.winfo_pointery() - canvas.winfo_rooty())
 
-    def make_dot():
-        global dot_positions
-
-        a, b = image_size
-        radius = 5  # 원의 반지름 설정
-
-        # 각 꼭지점의 좌표 계산
-        coordinates = [
-            (radius + 3, radius + 3),  # 좌측 상단
-            (a // 2, radius + 3),  # 중앙 상단
-            (a - 3, radius + 3),  # 우측 상단
-            (radius + 3, b // 2),  # 좌측 중앙
-            (a - 3, b // 2),  # 우측 중앙
-            (radius + 3, b - 3),  # 좌측 하단
-            (a // 2, b - 3),  # 중앙 하단
-            (a - 3, b - 3),  # 우측 하단
-        ]
-
-        dot_positions = []
-
-        # 각 꼭지점에 원 그리기
-        for x, y in coordinates:
-            dot_positions.append((x - radius, y - radius, x + radius, y + radius))
-            canvas.create_rectangle(x - radius, y - radius, x + radius, y + radius, fill='white', outline='black')
-
     def check_cursor_position(event):
         image_x, image_y = 0, 0
         image_width, image_height = image_size[0], image_size[1]
@@ -258,7 +232,7 @@ def photoeditormain(username="admin", userversion="Premium"):
         else:
             canvas.config(cursor="")
 
-    def image_crop():
+    def image_cut():
         global crop_start_x, crop_start_y, crop_end_x, crop_end_y
         if crop_start_x is not None and crop_start_y is not None and crop_end_x is not None and crop_end_y is not None:
             min_x = min(crop_start_x, crop_end_x)
@@ -292,13 +266,17 @@ def photoeditormain(username="admin", userversion="Premium"):
         global crop_end_x, crop_end_y
         crop_end_x, crop_end_y = event.x, event.y
         canvas.delete("rectangle")
-        image_crop()
+        image_cut()
+        canvas.unbind("<Motion>")
+        canvas.unbind("<B1-Motion>")
+        canvas.unbind("<ButtonPress-1>")
+        canvas.unbind("<ButtonRelease-1>")
 
-    def bind_event():
+    def image_crop():
+        canvas.bind("<Motion>", check_cursor_position)
         canvas.bind("<B1-Motion>", drag)  # 마우스 움직임 이벤트에 check_cursor_position 함수를 바인딩합니다.
         canvas.bind("<ButtonPress-1>", clicked)  # 마우스 왼쪽 버튼을 눌렀을 때 crop 시작 좌표를 기록합니다.
         canvas.bind("<ButtonRelease-1>", released)  # 마우스 왼쪽 버튼을 놓았을 때 crop 종료 좌표를 기록하고, 해당 영역을 잘라냅니다.
-        canvas.bind("<Motion>", check_cursor_position)
         redo_history.clear()
         update_btn_state()
 
@@ -614,7 +592,6 @@ def photoeditormain(username="admin", userversion="Premium"):
     # 이미지 캔버스 생성
     canvas = tk.Canvas(image_frame, width=700, height=700, bg="white")
     canvas.place(x=0, y=0)
-    # bind_event()
 
     # 버튼 생성
     create_button(user_frame, "icon//icon_load.png", 90, load_image, 1000, 0)
@@ -643,7 +620,7 @@ def photoeditormain(username="admin", userversion="Premium"):
 
     create_title(button1_frame, "Etc.", 493)
     create_line(button1_frame, 517)
-    create_button(button1_frame, "icon//icon_crop.png", 90, bind_event, 25, 525)
+    create_button(button1_frame, "icon//icon_crop.png", 90, image_crop, 25, 525)
     create_button(button1_frame, "icon//icon_convert.png", 90, path_convert, 125, 525)
 
     create_title(button2_frame, "Undo & Redo", 3)
