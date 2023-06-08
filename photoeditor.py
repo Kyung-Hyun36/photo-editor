@@ -9,7 +9,6 @@ import login
 import socket
 import urllib.request
 from datetime import datetime, timedelta
-import base64
 
 HOST = "127.0.0.1"
 PORT = 12345

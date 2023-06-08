@@ -1,5 +1,4 @@
 import tkinter as tk
-import tkinter.font
 import socket
 import login
 from tkinter import messagebox
