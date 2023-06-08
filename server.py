@@ -19,7 +19,6 @@ def handle_signup(client_socket, client_address):
     id, address = client_socket.recvfrom(1024)
     name, address = client_socket.recvfrom(1024)
     password, address = client_socket.recvfrom(1024)
-    version, address = client_socket.recvfrom(1024)
 
     # 회원가입 로직
     if id.decode() in user_database:
@@ -28,7 +27,7 @@ def handle_signup(client_socket, client_address):
         user_database[id.decode()] = {
             'password': password.decode(),
             'name': name.decode(),
-            'version': version.decode()
+            'version': '1'
         }
         client_socket.sendto('회원가입이 완료되었습니다.'.encode(), client_address)
 
@@ -45,6 +44,15 @@ def handle_login(client_socket, client_address):
         client_socket.sendto(user_database[id.decode()]['version'].encode(), client_address)
     else:
         client_socket.sendto('로그인 실패'.encode(), client_address)
+
+
+def handle_update(client_socket, client_address):
+    # 사용자명과 버전 수신
+    id, address = client_socket.recvfrom(1024)
+    user_database[id.decode()]['version'] = '2'
+    msg = user_database[id.decode()]['name'] + "님 안녕하세요.\nPremium 회원이 되어 주셔서 감사합니다."
+    client_socket.sendto(msg.encode(), client_address)
+
 
 
 def handle_save(client_socket, client_address):
@@ -72,6 +80,8 @@ while True:
         handle_signup(server_socket, client_address)
     elif request.decode() == 'login':
         handle_login(server_socket, client_address)
+    elif request.decode() == 'update':
+        handle_update(server_socket, client_address)
     elif request.decode() == "save":
         handle_save(server_socket, client_address)
     elif request.decode() == "load":

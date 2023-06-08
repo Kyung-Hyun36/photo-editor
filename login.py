@@ -17,9 +17,9 @@ def loginmain():
         win_login.destroy()
         signup.signupmain()
 
-    def open_photoeditor(username, userversion):
+    def open_photoeditor(userid, username, userversion):
         win_login.destroy()
-        photoeditor.photoeditormain(username, userversion)
+        photoeditor.photoeditormain(userid, username, userversion)
 
     def login():
         # 서버에 로그인 요청 전송
@@ -42,7 +42,7 @@ def loginmain():
                 userversion = "Premium"
             else:
                 userversion = "Free"
-            open_photoeditor(username.decode(), userversion)
+            open_photoeditor(userid, username.decode(), userversion)
         else:
             messagebox.showwarning(response.decode(), "아이디와 비밀번호를 확인해 주세요.")
 

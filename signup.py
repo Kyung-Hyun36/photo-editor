@@ -18,7 +18,6 @@ def signupmain():
         username = entry_username.get()
         password = entry_password.get()
         confirm_password = entry_confirm_password.get()
-        version = str(version_var.get())
 
         if id == "" or username == "" or password == "" or confirm_password == "":
             messagebox.showwarning("회원가입 실패", "빈칸을 모두 기입해 주세요.")
@@ -32,7 +31,6 @@ def signupmain():
             client_socket.sendto(id.encode(), (HOST, PORT))
             client_socket.sendto(username.encode(), (HOST, PORT))
             client_socket.sendto(password.encode(), (HOST, PORT))
-            client_socket.sendto(version.encode(), (HOST, PORT))
 
             # 서버로부터 응답 수신
             response, server_address = client_socket.recvfrom(1024)
@@ -57,7 +55,7 @@ def signupmain():
 
     # 윈도우의 가로 길이와 세로 길이 구하기
     win_width = 300
-    win_height = 230
+    win_height = 200
 
     # 윈도우를 화면 중앙에 위치시키기
     x = (screen_width - win_width) // 2
@@ -91,14 +89,6 @@ def signupmain():
     label_confirm_password.grid(row=3, column=0, pady=5)
     entry_confirm_password = tk.Entry(signup_frame, show="*")
     entry_confirm_password.grid(row=3, column=1, pady=5)
-
-    # Premium 선택 버튼
-    version_var = tk.IntVar()
-    button_free = tk.Radiobutton(signup_frame, text="Free", value=1, variable=version_var)
-    button_free.grid(row=4, column=0, pady=5)
-    button_free.select()
-    button_premium = tk.Radiobutton(signup_frame, text="Premium", value=2, variable=version_var)
-    button_premium.grid(row=4, column=1, pady=5)
 
     # 회원가입 버튼
     button_register = tk.Button(signup_frame, text="회원가입", command=signup)

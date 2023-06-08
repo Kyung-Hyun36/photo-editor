@@ -1,7 +1,7 @@
 import tkinter as tk
 import tkinter.font
 from tkinter import *
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 import numpy as np
 from PIL import Image, ImageTk, ImageGrab
 import cv2
@@ -30,13 +30,18 @@ crop_end_x, crop_end_y = None, None
 current_x, current_y = None, None
 image_captured = None
 cursor = 1
+userid, username, userversion = None, None, None
 
 
-def photoeditormain(username="admin", userversion="Premium"):
-    def custom_askyesno(title, message, text1="종료", text2="로그아웃"):
+def photoeditormain(id="admin", name="관리자", version="Premium"):
+    global userid, username, userversion
+    userid = id
+    username = name
+    userversion = version
+    def ask_exit_cancle():
         # 사용자 정의 대화상자 생성
         dialog = tk.Toplevel(win_main)
-        dialog.title(title)
+        dialog.title("종료")
 
         # 윈도우의 가로 길이와 세로 길이 구하기
         dialog_width = 300
@@ -48,21 +53,21 @@ def photoeditormain(username="admin", userversion="Premium"):
         dialog.geometry(f"{dialog_width}x{dialog_height}+{x}+{y}")
 
         # 메시지 표시
-        tk.Label(dialog, text=message).pack(pady=20)
+        tk.Label(dialog, text="프로그램을 종료하거나 로그아웃하시겠습니까?").pack(pady=20)
 
         # 버튼1
         def command1():
             dialog.result = True
             dialog.destroy()
 
-        tk.Button(dialog, text=text1, command=command1).place(x=100, y=60)
+        tk.Button(dialog, text="종료", command=command1).place(x=100, y=60)
 
         # 버튼2
         def command2():
             dialog.result = False
             dialog.destroy()
 
-        tk.Button(dialog, text=text2, command=command2).place(x=150, y=60)
+        tk.Button(dialog, text="로그아웃", command=command2).place(x=150, y=60)
 
         # 대화상자를 modal로 설정하여 다른 창을 클릭할 수 없게 함
         dialog.transient(win_main)
@@ -73,10 +78,48 @@ def photoeditormain(username="admin", userversion="Premium"):
         return dialog.result
 
     def on_closing():
-        result = custom_askyesno("종료", "프로그램을 종료하거나 로그아웃하시겠습니까?", "종료", "로그아웃")
+        result = ask_exit_cancle()
         win_main.destroy()
         if not result:
             login.loginmain()
+
+    def payment():
+        # 사용자 정의 대화상자 생성
+        dialog = tk.Toplevel(win_main)
+        dialog.title("Premium")
+
+        # 윈도우의 가로 길이와 세로 길이 구하기
+        dialog_width = 300
+        dialog_height = 400
+
+        # 윈도우를 화면 중앙에 위치시키기
+        x = (screen_width - dialog_width) // 2
+        y = (screen_height - dialog_height) // 2
+        dialog.geometry(f"{dialog_width}x{dialog_height}+{x}+{y}")
+
+        # 버튼1
+        def command1():
+            global userversion
+            userversion = "Premium"
+            label_userversion["text"] = userversion
+            client_socket.sendto('update'.encode(), (HOST, PORT))
+            client_socket.sendto(userid.encode(), (HOST, PORT))
+            response, server_address = client_socket.recvfrom(1024)
+            messagebox.showinfo("결제 완료", response.decode())
+            dialog.destroy()
+
+        tk.Button(dialog, text="결제", command=command1).place(x=100, y=260)
+
+        # 버튼2
+        def command2():
+            dialog.destroy()
+
+        tk.Button(dialog, text="취소", command=command2).place(x=150, y=260)
+
+        # 대화상자를 modal로 설정하여 다른 창을 클릭할 수 없게 함
+        dialog.transient(win_main)
+        dialog.grab_set()
+        win_main.wait_window(dialog)
 
     def update_btn_state():
         if len(undo_history) >= 2:
@@ -347,15 +390,18 @@ def photoeditormain(username="admin", userversion="Premium"):
 
     def rotate_user():
         global image_tk, layer_ids, current_image
-        # 현재 이미지 가져오기
-        image = current_image
+        if userversion == "Premium":
+            # 현재 이미지 가져오기
+            image = current_image
 
-        # 이미지 회전
-        angle = int(angle_entry.get())
-        rotated_image = image.rotate(angle)
-        update_image(rotated_image)
-        redo_history.clear()
-        update_btn_state()
+            # 이미지 회전
+            angle = int(angle_entry.get())
+            rotated_image = image.rotate(-angle)
+            update_image(rotated_image)
+            redo_history.clear()
+            update_btn_state()
+        else:
+            payment()
 
     def decrease_brightness():
         global image_tk, layer_ids, current_image
@@ -604,7 +650,8 @@ def photoeditormain(username="admin", userversion="Premium"):
     font_user = tkinter.font.Font(family="Tahoma", size=12, weight="bold")
 
     tk.Label(user_frame, text=username, font=font_user, background="white").place(x=1220, y=7)
-    tk.Label(user_frame, text=userversion, font=font_user, background="white").place(x=1300, y=7)
+    label_userversion = tk.Label(user_frame, text=userversion, font=font_user, background="white")
+    label_userversion.place(x=1300, y=7)
 
     # 이미지 캔버스 생성
     canvas = tk.Canvas(image_frame, width=700, height=700, bg="white")
