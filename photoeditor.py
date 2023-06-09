@@ -673,7 +673,7 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
     create_title(button1_frame, "Adjust Brightness", 233)
     create_line(button1_frame, 257)
     create_button(button1_frame, "icon//icon_brightness.png", 90, decrease_brightness, 25, 265)
-    create_button(button1_frame, "icon//icon_brightness.png", 90, increase_brightness, 125, 265)
+    create_button(button1_frame, "icon//icon_darkness.png", 90, increase_brightness, 125, 265)
 
     create_title(button1_frame, "Blur", 363)
     create_line(button1_frame, 387)
