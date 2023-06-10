@@ -194,8 +194,24 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
             update_btn_state()
             return file_path
 
+    def center_image_on_canvas(canvas, image_tk):
+        # 캔버스의 크기 가져오기
+        canvas_width = canvas.winfo_width()
+        canvas_height = canvas.winfo_height()
+
+        # 이미지의 크기 가져오기
+        image_width = image_tk.width()
+        image_height = image_tk.height()
+
+        # 이미지를 화면 가운데로 이동하기 위한 좌표 계산
+        x = (canvas_width - image_width) // 2
+        y = (canvas_height - image_height) // 2
+
+        # 이미지를 캔버스 중앙에 배치
+        canvas.coords(image_layer, x, y)
+
     def update_image(new_image):
-        global image_tk, layer_ids, current_image, image_size, update_count
+        global image_tk, layer_ids, current_image, image_size, image_layer
 
         # 이미지 리사이즈
         max_size = 700
@@ -210,6 +226,8 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
         image_tk = ImageTk.PhotoImage(resized_image)
         image_layer = canvas.create_image(0, 0, anchor="nw", image=image_tk)
 
+        center_image_on_canvas(canvas, image_tk)
+
         # 레이어 ID 업데이트
         layer_ids = [image_layer]
 
@@ -220,7 +238,7 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
         undo_history.append(current_image.copy())
 
     def undo():
-        global image_tk, layer_ids, current_image, undo_history
+        global image_tk, layer_ids, current_image, undo_history, image_layer
         if len(undo_history) >= 2:
             # 이전 작업 단계의 이미지 가져오기
             last = undo_history.pop()
@@ -235,13 +253,14 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
                 canvas.delete(layer_id)
             image_tk = ImageTk.PhotoImage(resized_image)
             image_layer = canvas.create_image(0, 0, anchor="nw", image=image_tk)
+            center_image_on_canvas(canvas, image_tk)
             layer_ids = [image_layer]
             current_image = resized_image
 
         update_btn_state()
 
     def redo():
-        global image_tk, layer_ids, current_image, undo_history
+        global image_tk, layer_ids, current_image, undo_history, image_layer
         if len(redo_history) >= 1:
             # 이전 작업 단계의 이미지 가져오기
             last = redo_history.pop()
@@ -255,6 +274,7 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
                 canvas.delete(layer_id)
             image_tk = ImageTk.PhotoImage(resized_image)
             image_layer = canvas.create_image(0, 0, anchor="nw", image=image_tk)
+            center_image_on_canvas(canvas, image_tk)
             layer_ids = [image_layer]
             current_image = resized_image
 
@@ -672,8 +692,8 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
 
     create_title(button1_frame, "Adjust Brightness", 233)
     create_line(button1_frame, 257)
-    create_button(button1_frame, "icon//icon_brightness.png", 90, decrease_brightness, 25, 265)
-    create_button(button1_frame, "icon//icon_darkness.png", 90, increase_brightness, 125, 265)
+    create_button(button1_frame, "icon//icon_brightness.png", 90, increase_brightness, 25, 265)
+    create_button(button1_frame, "icon//icon_darkness.png", 90, decrease_brightness, 125, 265)
 
     create_title(button1_frame, "Blur", 363)
     create_line(button1_frame, 387)
