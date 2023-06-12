@@ -23,13 +23,13 @@ current_image = None
 undo_history, redo_history = [], []
 start_x, start_y = None, None
 convert = 0
-dot_positions = []
 crop_start_x, crop_start_y = None, None
 crop_end_x, crop_end_y = None, None
 current_x, current_y = None, None
 image_captured = None
 cursor = 1
 userid, username, userversion = None, None, None
+x_offset, y_offset = 0, 0
 
 
 def photoeditormain(id="admin", name="관리자", version="Premium"):
@@ -195,6 +195,7 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
             return file_path
 
     def center_image_on_canvas(canvas, image_tk):
+        global x_offset, y_offset
         # 캔버스의 크기 가져오기
         canvas_width = canvas.winfo_width()
         canvas_height = canvas.winfo_height()
@@ -209,6 +210,8 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
 
         # 이미지를 캔버스 중앙에 배치
         canvas.coords(image_layer, x, y)
+        x_offset = -x
+        y_offset = -y
 
     def update_image(new_image):
         global image_tk, layer_ids, current_image, image_size, image_layer
@@ -298,7 +301,7 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
             canvas.create_rectangle(crop_start_x, crop_start_y, current_x, current_y, outline='black', tags='rectangle')
 
     def drag(event):
-        global dot_positions, crop_start_x, crop_start_y, current_x, current_y
+        global crop_start_x, crop_start_y, current_x, current_y
         # 현재 마우스 위치 저장
         current_x, current_y = event.x, event.y
         draw_rectangle()
@@ -339,12 +342,17 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
         canvas.bind("<ButtonRelease-1>", released)  # 마우스 왼쪽 버튼을 놓았을 때 crop 종료 좌표를 기록하고, 해당 영역을 잘라냅니다.
 
     def image_crop():
-        global crop_start_x, crop_start_y, crop_end_x, crop_end_y, cursor
+        global crop_start_x, crop_start_y, crop_end_x, crop_end_y, cursor, x_offset, y_offset
         if crop_start_x is not None and crop_start_y is not None and crop_end_x is not None and crop_end_y is not None:
             min_x = min(crop_start_x, crop_end_x)
             max_x = max(crop_start_x, crop_end_x)
             min_y = min(crop_start_y, crop_end_y)
             max_y = max(crop_start_y, crop_end_y)
+
+            min_x += x_offset
+            max_x += x_offset
+            min_y += y_offset
+            max_y += y_offset
 
             cropped_image = current_image.crop((min_x, min_y, max_x, max_y))
             update_image(cropped_image)
@@ -686,9 +694,9 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
     create_button(button1_frame, "icon//icon_rotate45CCW.png", 90, rotate_45CCW, 125, 35)
     create_button(button1_frame, "icon//icon_rotate90CW.png", 90, rotate_90CW, 25, 135)
     create_button(button1_frame, "icon//icon_rotate90CCW.png", 90, rotate_90CCW, 125, 135)
-    create_button(button1_frame, "icon//icon_rotateuser.png", 90, rotate_user, 225, 75)
+    create_button(button1_frame, "icon//icon_rotateuser.png", 95, rotate_user, 225, 75)
     angle_entry = Entry(button1_frame, width=10, background="gray")
-    angle_entry.place(x=233, y=170)
+    angle_entry.place(x=233, y=180)
 
     create_title(button1_frame, "Adjust Brightness", 233)
     create_line(button1_frame, 257)
