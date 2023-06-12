@@ -528,12 +528,17 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
         update_btn_state()
 
     def selected_blur():
-        global image
+        global image, cursor
         if crop_start_x is not None and crop_start_y is not None and crop_end_x is not None and crop_end_y is not None:
             min_x = min(crop_start_x, crop_end_x)
             max_x = max(crop_start_x, crop_end_x)
             min_y = min(crop_start_y, crop_end_y)
             max_y = max(crop_start_y, crop_end_y)
+
+            min_x += x_offset
+            max_x += x_offset
+            min_y += y_offset
+            max_y += y_offset
 
             # 영역 선택
             x, y, width, height = min_x, min_y, max_x - min_x, max_y - min_y
@@ -682,6 +687,40 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
         tk.Label(root, width=41, height=1, background="gray").place(x=20, y=y)
         tk.Label(root, width=41, height=1, background="white").place(x=20, y=y + 2)
 
+
+    def Non_Selected_Blur():
+        global image, cursor
+        if crop_start_x is not None and crop_start_y is not None and crop_end_x is not None and crop_end_y is not None:
+            min_x = min(crop_start_x, crop_end_x)
+            max_x = max(crop_start_x, crop_end_x)
+            min_y = min(crop_start_y, crop_end_y)
+            max_y = max(crop_start_y, crop_end_y)
+
+            min_x += x_offset
+            max_x += x_offset
+            min_y += y_offset
+            max_y += y_offset
+
+            # 영역 선택
+            x, y, width, height = min_x, min_y, max_x - min_x, max_y - min_y
+
+            image = np.array(current_image)
+            selected_region = image[y:y + height, x:x + width]
+            N_selected_region = cv2.blur(image, (50, 50))  # 블러(모자이크) 처리
+            N_selected_region[y:y + height, x:x + width] = selected_region  # 원본 이미지에 적용
+            image = Image.fromarray(N_selected_region)
+            update_image(image)
+
+        canvas.delete("rectangle")
+        canvas.unbind("<Motion>")
+        canvas.unbind("<B1-Motion>")
+        canvas.unbind("<ButtonPress-1>")
+        canvas.unbind("<ButtonRelease-1>")
+        cursor = 0  # 마우스 커서 모양을 원래대로 복구
+        check_cursor_position(None)
+        redo_history.clear()
+        update_btn_state()
+
     # 소켓 생성
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -760,7 +799,7 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
     create_line(button1_frame, 387)
     create_button(button1_frame, "icon//icon_blur.png", 90, gaus_blur, 25, 395)
     create_button(button1_frame, "icon//icon_blur.png", 90, selected_blur, 125, 395)
-    create_button(button1_frame, "icon//icon_blur.png", 90, gaus_blur, 225, 395)
+    create_button(button1_frame, "icon//icon_blur.png", 90, Non_Selected_Blur, 225, 395)
 
     create_title(button1_frame, "Etc.", 493)
     create_line(button1_frame, 517)
