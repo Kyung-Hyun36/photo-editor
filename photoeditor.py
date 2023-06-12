@@ -37,6 +37,7 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
     userid = id
     username = name
     userversion = version
+
     def ask_exit_cancle():
         # 사용자 정의 대화상자 생성
         dialog = tk.Toplevel(win_main)
@@ -526,15 +527,31 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
         redo_history.clear()
         update_btn_state()
 
-    def sepia_filter():
-        global image_tk, layer_ids, current_image
-        image = np.array(current_image)
-        sepia_matrix = np.array([[0.393, 0.769, 0.189],
-                                 [0.349, 0.686, 0.168],
-                                 [0.272, 0.534, 0.131]])
-        sepia_image = cv2.transform(image, sepia_matrix)
-        sepia_image = Image.fromarray(sepia_image.astype('uint8'))
-        update_image(sepia_image)
+    def selected_blur():
+        global image
+        if crop_start_x is not None and crop_start_y is not None and crop_end_x is not None and crop_end_y is not None:
+            min_x = min(crop_start_x, crop_end_x)
+            max_x = max(crop_start_x, crop_end_x)
+            min_y = min(crop_start_y, crop_end_y)
+            max_y = max(crop_start_y, crop_end_y)
+
+            # 영역 선택
+            x, y, width, height = min_x, min_y, max_x - min_x, max_y - min_y
+
+            image = np.array(current_image)
+            selected_region = image[y:y + height, x:x + width]
+            selected_region = cv2.blur(selected_region, (30, 30))  # 블러(모자이크) 처리
+            image[y:y + height, x:x + width] = selected_region  # 원본 이미지에 적용
+            image = Image.fromarray(image)
+            update_image(image)
+
+        canvas.delete("rectangle")
+        canvas.unbind("<Motion>")
+        canvas.unbind("<B1-Motion>")
+        canvas.unbind("<ButtonPress-1>")
+        canvas.unbind("<ButtonRelease-1>")
+        cursor = 0  # 마우스 커서 모양을 원래대로 복구
+        check_cursor_position(None)
         redo_history.clear()
         update_btn_state()
 
@@ -545,6 +562,30 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
                                [0, 0.8, 0],
                                [0, 0, 0.8]])
         red_image = cv2.transform(image, red_matrix)
+        red_image = Image.fromarray(red_image.astype('uint8'))
+        update_image(red_image)
+        redo_history.clear()
+        update_btn_state()
+
+    def orange_filter():
+        global image_tk, layer_ids, current_image
+        image = np.array(current_image)
+        orange_matrix = np.array([[0.9, 0.4, 0.0],
+                                  [0.4, 0.7, 0.0],
+                                  [0.0, 0.0, 0.7]])
+        red_image = cv2.transform(image, orange_matrix)
+        red_image = Image.fromarray(red_image.astype('uint8'))
+        update_image(red_image)
+        redo_history.clear()
+        update_btn_state()
+
+    def yellow_filter():
+        global image_tk, layer_ids, current_image
+        image = np.array(current_image)
+        yellow_matrix = np.array([[0.7, 0.4, 0.0],
+                                  [0.4, 0.7, 0.0],
+                                  [0.0, 0.0, 0.5]])
+        red_image = cv2.transform(image, yellow_matrix)
         red_image = Image.fromarray(red_image.astype('uint8'))
         update_image(red_image)
         redo_history.clear()
@@ -571,6 +612,18 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
         blue_image = cv2.transform(image, blue_matrix)
         blue_image = Image.fromarray(blue_image.astype('uint8'))
         update_image(blue_image)
+        redo_history.clear()
+        update_btn_state()
+
+    def purple_filter():
+        global image_tk, layer_ids, current_image
+        image = np.array(current_image)
+        purple_matrix = np.array([[0.6, 0.0, 0.5],
+                                  [0.0, 0.4, 0.6],
+                                  [0.6, 0.6, 0.8]])
+        red_image = cv2.transform(image, purple_matrix)
+        red_image = Image.fromarray(red_image.astype('uint8'))
+        update_image(red_image)
         redo_history.clear()
         update_btn_state()
 
@@ -706,7 +759,7 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
     create_title(button1_frame, "Blur", 363)
     create_line(button1_frame, 387)
     create_button(button1_frame, "icon//icon_blur.png", 90, gaus_blur, 25, 395)
-    create_button(button1_frame, "icon//icon_blur.png", 90, gaus_blur, 125, 395)
+    create_button(button1_frame, "icon//icon_blur.png", 90, selected_blur, 125, 395)
     create_button(button1_frame, "icon//icon_blur.png", 90, gaus_blur, 225, 395)
 
     create_title(button1_frame, "Etc.", 493)
@@ -731,17 +784,22 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
     create_line(button2_frame, 287)
     create_button(button2_frame, "icon//icon_gray.png", 150, grayscale, 25, 295)
     create_button(button2_frame, "icon//icon_cannyedge.png", 150, canny_edge, 180, 295)
-    create_button(button2_frame, "icon//icon_sepia.png", 150, sepia_filter, 25, 355)
-    create_button(button2_frame, "icon//icon_red.png", 150, red_filter, 180, 355)
-    create_button(button2_frame, "icon//icon_blue.png", 150, blue_filter, 25, 415)
-    create_button(button2_frame, "icon//icon_green.png", 150, green_filter, 180, 415)
 
-    create_title(button2_frame, "TempSave", 493)
-    create_line(button2_frame, 517)
+    create_title(button2_frame, "Color Palette", 360)
+    create_line(button2_frame, 384)
+    create_button(button2_frame, "icon//icon_red.png", 40, red_filter, 25, 395)
+    create_button(button2_frame, "icon//icon_orange.png", 40, orange_filter, 75, 395)
+    create_button(button2_frame, "icon//icon_yellow.png", 40, yellow_filter, 125, 395)
+    create_button(button2_frame, "icon//icon_green.png", 40, green_filter, 175, 395)
+    create_button(button2_frame, "icon//icon_blue.png", 40, blue_filter, 225, 395)
+    create_button(button2_frame, "icon//icon_purple.png", 40, purple_filter, 275, 395)
+
+    create_title(button2_frame, "TempSave", 513)
+    create_line(button2_frame, 537)
     canvas_temp = tk.Canvas(button2_frame, width=100, height=100, bg="white", borderwidth=1, relief="solid")
-    canvas_temp.place(x=110, y=525)
-    create_button(button2_frame, "icon//icon_save.png", 90, temp_save, 75, 635)
-    create_button(button2_frame, "icon//icon_load.png", 90, temp_load, 175, 635)
+    canvas_temp.place(x=110, y=545)
+    create_button(button2_frame, "icon//icon_save.png", 90, temp_save, 75, 655)
+    create_button(button2_frame, "icon//icon_load.png", 90, temp_load, 175, 655)
 
     # 윈도우 종료 시 on_closing 함수 실행
     win_main.protocol("WM_DELETE_WINDOW", on_closing)
