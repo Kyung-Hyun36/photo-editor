@@ -86,15 +86,19 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
         # 사용자 정의 대화상자 생성
         dialog = tk.Toplevel(win_main)
         dialog.title("Premium")
+        dialog.resizable(False, False)
 
         # 윈도우의 가로 길이와 세로 길이 구하기
-        dialog_width = 300
-        dialog_height = 400
+        dialog_width = 280
+        dialog_height = 450
 
         # 윈도우를 화면 중앙에 위치시키기
         x = (screen_width - dialog_width) // 2
         y = (screen_height - dialog_height) // 2
         dialog.geometry(f"{dialog_width}x{dialog_height}+{x}+{y}")
+
+        premium_img = ImageTk.PhotoImage(resize_image(Image.open("icon/premium.png"), 500))
+        tk.Label(dialog, image=premium_img).place(x=0, y=0)
 
         # 버튼1
         def command1():
@@ -107,13 +111,8 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
             messagebox.showinfo("결제 완료", response.decode())
             dialog.destroy()
 
-        tk.Button(dialog, text="결제", command=command1).place(x=100, y=260)
-
-        # 버튼2
-        def command2():
-            dialog.destroy()
-
-        tk.Button(dialog, text="취소", command=command2).place(x=150, y=260)
+        pay_img = ImageTk.PhotoImage(resize_image(Image.open("icon/payment.png"), 220))
+        tk.Button(dialog, image=pay_img, command=command1).place(x=30, y=380)
 
         # 대화상자를 modal로 설정하여 다른 창을 클릭할 수 없게 함
         dialog.transient(win_main)
@@ -149,6 +148,8 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
 
         # client_socket.sendto('save'.encode(), (HOST, PORT))
         # client_socket.sendto(base64_encoded_image.encode(), (HOST, PORT))
+
+        temp_time['text'] = kst_time
 
         temp_image = ImageTk.PhotoImage(resize_image(image_captured, 100))
         canvas_temp.create_image(0, 0, anchor="nw", image=temp_image)
@@ -533,13 +534,6 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
             image = Image.fromarray(image)
             update_image(image)
 
-        canvas.delete("rectangle")
-        canvas.unbind("<Motion>")
-        canvas.unbind("<B1-Motion>")
-        canvas.unbind("<ButtonPress-1>")
-        canvas.unbind("<ButtonRelease-1>")
-        cursor = 0  # 마우스 커서 모양을 원래대로 복구
-        check_cursor_position(None)
         redo_history.clear()
         update_btn_state()
 
@@ -694,13 +688,6 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
             image = Image.fromarray(N_selected_region)
             update_image(image)
 
-        canvas.delete("rectangle")
-        canvas.unbind("<Motion>")
-        canvas.unbind("<B1-Motion>")
-        canvas.unbind("<ButtonPress-1>")
-        canvas.unbind("<ButtonRelease-1>")
-        cursor = 0  # 마우스 커서 모양을 원래대로 복구
-        check_cursor_position(None)
         redo_history.clear()
         update_btn_state()
 
@@ -802,29 +789,33 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
 
     create_title(button2_frame, "Add & Crop", 133)
     create_line(button2_frame, 157)
-    create_button(button2_frame, "icon//icon_add.png", 90, undo, 125, 165)
-    create_button(button2_frame, "icon//icon_crop.png", 90, image_crop, 225, 165)
+    create_button(button2_frame, "icon//icon_add.png", 90, undo, 25, 165)
+    create_button(button2_frame, "icon//icon_crop.png", 90, image_crop, 125, 165)
 
     create_title(button2_frame, "Filter", 263)
     create_line(button2_frame, 287)
-    create_button(button2_frame, "icon//icon_gray.png", 150, grayscale, 25, 295)
-    create_button(button2_frame, "icon//icon_cannyedge.png", 150, canny_edge, 180, 295)
+    create_button(button2_frame, "icon//icon_gray.png", 250, grayscale, 25, 295)
+    create_button(button2_frame, "icon//icon_cannyedge.png", 250, canny_edge, 25, 375)
 
-    create_title(button2_frame, "Color Palette", 360)
-    create_line(button2_frame, 384)
-    create_button(button2_frame, "icon//icon_red.png", 40, red_filter, 25, 395)
-    create_button(button2_frame, "icon//icon_orange.png", 40, orange_filter, 75, 395)
-    create_button(button2_frame, "icon//icon_yellow.png", 40, yellow_filter, 125, 395)
-    create_button(button2_frame, "icon//icon_green.png", 40, green_filter, 175, 395)
-    create_button(button2_frame, "icon//icon_blue.png", 40, blue_filter, 225, 395)
-    create_button(button2_frame, "icon//icon_purple.png", 40, purple_filter, 275, 395)
+    create_title(button2_frame, "Color Palette", 400)
+    create_line(button2_frame, 424)
+    create_button(button2_frame, "icon//icon_red.png", 40, red_filter, 25, 435)
+    create_button(button2_frame, "icon//icon_orange.png", 40, orange_filter, 75, 435)
+    create_button(button2_frame, "icon//icon_yellow.png", 40, yellow_filter, 125, 435)
+    create_button(button2_frame, "icon//icon_green.png", 40, green_filter, 175, 435)
+    create_button(button2_frame, "icon//icon_blue.png", 40, blue_filter, 225, 435)
+    create_button(button2_frame, "icon//icon_purple.png", 40, purple_filter, 275, 435)
 
-    create_title(button2_frame, "TempSave", 513)
-    create_line(button2_frame, 537)
+    create_title(button2_frame, "TempSave", 553)
+    create_line(button2_frame, 577)
     canvas_temp = tk.Canvas(button2_frame, width=100, height=100, bg="white", borderwidth=1, relief="solid")
-    canvas_temp.place(x=110, y=545)
-    create_button(button2_frame, "icon//icon_save.png", 90, temp_save, 75, 655)
-    create_button(button2_frame, "icon//icon_load.png", 90, temp_load, 175, 655)
+    canvas_temp.place(x=25, y=585)
+    create_button(button2_frame, "icon//icon_save.png", 80, temp_save, 140, 585)
+    create_button(button2_frame, "icon//icon_load.png", 80, temp_load, 230, 585)
+
+    font_time = tkinter.font.Font(family="맑은 고딕", size=12)
+    temp_time = tk.Label(button2_frame, text="", background="white", font=font_time)
+    temp_time.place(x=145, y=630)
 
     # 윈도우 종료 시 on_closing 함수 실행
     win_main.protocol("WM_DELETE_WINDOW", on_closing)
