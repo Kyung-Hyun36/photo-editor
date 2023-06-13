@@ -13,9 +13,6 @@ from datetime import datetime, timedelta
 HOST = "127.0.0.1"
 PORT = 12345
 
-url = 'https://www.google.com/'
-page = urllib.request.urlopen(url)
-
 image_path, image_tk = None, None
 image_size = (0, 0)
 layer_ids = []
@@ -41,6 +38,7 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
         # 사용자 정의 대화상자 생성
         dialog = tk.Toplevel(win_main)
         dialog.title("종료")
+        dialog.resizable(False, False)
 
         # 윈도우의 가로 길이와 세로 길이 구하기
         dialog_width = 300
@@ -100,7 +98,6 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
         premium_img = ImageTk.PhotoImage(resize_image(Image.open("icon/premium.png"), 500))
         tk.Label(dialog, image=premium_img).place(x=0, y=0)
 
-        # 버튼1
         def command1():
             global userversion
             userversion = "Premium"
@@ -112,7 +109,7 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
             dialog.destroy()
 
         pay_img = ImageTk.PhotoImage(resize_image(Image.open("icon/payment.png"), 220))
-        tk.Button(dialog, image=pay_img, command=command1).place(x=30, y=380)
+        tk.Button(dialog, image=pay_img, command=command1, relief=tk.FLAT).place(x=30, y=380)
 
         # 대화상자를 modal로 설정하여 다른 창을 클릭할 수 없게 함
         dialog.transient(win_main)
@@ -132,6 +129,8 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
 
     def temp_save():
         global image_captured
+        url = 'https://www.google.com/'
+        page = urllib.request.urlopen(url)
         utc_time = datetime.strptime(page.headers['Date'], '%a, %d %b %Y %H:%M:%S %Z')
         kst_time = utc_time + timedelta(hours=9)
 
