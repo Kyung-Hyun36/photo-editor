@@ -794,8 +794,8 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
 
     create_title(button2_frame, "Filter", 263)
     create_line(button2_frame, 287)
-    create_button(button2_frame, "icon//icon_gray.png", 250, grayscale, 25, 295)
-    create_button(button2_frame, "icon//icon_cannyedge.png", 250, canny_edge, 25, 375)
+    create_button(button2_frame, "icon//icon_grayscale.png", 250, grayscale, 25, 295)
+    create_button(button2_frame, "icon//icon_cannydege.png", 250, canny_edge, 25, 375)
 
     create_title(button2_frame, "Color Palette", 400)
     create_line(button2_frame, 424)
