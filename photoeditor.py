@@ -296,7 +296,6 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
         if crop_start_x is not None and crop_start_y is not None and current_x is not None and current_y is not None:
             # 기존에 그려진 사각형 삭제
             canvas.delete("rectangle")
-
             # 사각형 그리기
             canvas.create_rectangle(crop_start_x, crop_start_y, current_x, current_y, outline='black', tags='rectangle')
 
@@ -308,7 +307,9 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
 
     def clicked(event):
         global crop_start_x, crop_start_y
+        canvas.delete("rectangle")
         crop_start_x, crop_start_y = event.x, event.y
+        check_cursor_position(event)  # 커서 모양 업데이트
 
     def check_cursor_position(event):
         global x_offset, y_offset
@@ -330,11 +331,6 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
         global crop_end_x, crop_end_y
         crop_end_x, crop_end_y = event.x, event.y
 
-    def image_area():
-        canvas.bind("<B1-Motion>", drag)  # 마우스 움직임 이벤트에 check_cursor_position 함수를 바인딩합니다.
-        canvas.bind("<ButtonPress-1>", clicked)  # 마우스 왼쪽 버튼을 눌렀을 때 crop 시작 좌표를 기록합니다.
-        canvas.bind("<ButtonRelease-1>", released)  # 마우스 왼쪽 버튼을 놓았을 때 crop 종료 좌표를 기록하고, 해당 영역을 잘라냅니다.
-
     def image_crop():
         global crop_start_x, crop_start_y, crop_end_x, crop_end_y, x_offset, y_offset
         if crop_start_x is not None and crop_start_y is not None and crop_end_x is not None and crop_end_y is not None:
@@ -352,10 +348,6 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
             update_image(cropped_image)
 
         canvas.delete("rectangle")
-        canvas.unbind("<Motion>")
-        canvas.unbind("<ButtonPress-1>")
-        canvas.unbind("<ButtonRelease-1>")
-        check_cursor_position(None)
         redo_history.clear()
         update_btn_state()
 
@@ -767,7 +759,9 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
     canvas = tk.Canvas(image_frame, width=700, height=700, bg="white")
     canvas.place(x=0, y=0)
     canvas.bind("<Motion>", check_cursor_position)
-
+    canvas.bind("<ButtonPress-1>", clicked)  # 마우스 왼쪽 버튼을 눌렀을 때 crop 시작 좌표를 기록합니다.
+    canvas.bind("<B1-Motion>", drag)  # 마우스 움직임에 따라 사각형 영역을 그립니다.
+    canvas.bind("<ButtonRelease-1>", released)  # 마우스 왼쪽 버튼을 놓았을 때 crop 종료 좌표를 기록합니다.
 
     # 버튼 생성
     create_button(user_frame, "icon//icon_load.png", 90, load_image, 1000, 0)
@@ -808,7 +802,6 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
 
     create_title(button2_frame, "Add & Crop", 133)
     create_line(button2_frame, 157)
-    create_button(button2_frame, "icon//icon_area.png", 90, image_area, 25, 165)
     create_button(button2_frame, "icon//icon_add.png", 90, undo, 125, 165)
     create_button(button2_frame, "icon//icon_crop.png", 90, image_crop, 225, 165)
 
