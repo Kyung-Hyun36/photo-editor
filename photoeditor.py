@@ -513,101 +513,122 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
 
     def selected_blur():
         global image, cursor
-        if crop_start_x is not None and crop_start_y is not None and crop_end_x is not None and crop_end_y is not None:
-            min_x = min(crop_start_x, crop_end_x)
-            max_x = max(crop_start_x, crop_end_x)
-            min_y = min(crop_start_y, crop_end_y)
-            max_y = max(crop_start_y, crop_end_y)
+        if userversion == "Premium":
+            if crop_start_x is not None and crop_start_y is not None and crop_end_x is not None and crop_end_y is not None:
+                min_x = min(crop_start_x, crop_end_x)
+                max_x = max(crop_start_x, crop_end_x)
+                min_y = min(crop_start_y, crop_end_y)
+                max_y = max(crop_start_y, crop_end_y)
 
-            min_x += x_offset
-            max_x += x_offset
-            min_y += y_offset
-            max_y += y_offset
+                min_x += x_offset
+                max_x += x_offset
+                min_y += y_offset
+                max_y += y_offset
 
-            # 영역 선택
-            x, y, width, height = min_x, min_y, max_x - min_x, max_y - min_y
+                # 영역 선택
+                x, y, width, height = min_x, min_y, max_x - min_x, max_y - min_y
 
-            image = np.array(current_image)
-            selected_region = image[y:y + height, x:x + width]
-            selected_region = cv2.blur(selected_region, (30, 30))  # 블러(모자이크) 처리
-            image[y:y + height, x:x + width] = selected_region  # 원본 이미지에 적용
-            image = Image.fromarray(image)
-            update_image(image)
+                image = np.array(current_image)
+                selected_region = image[y:y + height, x:x + width]
+                selected_region = cv2.blur(selected_region, (30, 30))  # 블러(모자이크) 처리
+                image[y:y + height, x:x + width] = selected_region  # 원본 이미지에 적용
+                image = Image.fromarray(image)
+                update_image(image)
 
-        redo_history.clear()
-        update_btn_state()
+                redo_history.clear()
+                update_btn_state()
+        else:
+            payment()
 
     def red_filter():
         global image_tk, layer_ids, current_image
-        image = np.array(current_image)
-        red_matrix = np.array([[1.2, 0, 0],
-                               [0, 0.8, 0],
-                               [0, 0, 0.8]])
-        red_image = cv2.transform(image, red_matrix)
-        red_image = Image.fromarray(red_image.astype('uint8'))
-        update_image(red_image)
-        redo_history.clear()
-        update_btn_state()
+        if userversion == "Premium":
+            image = np.array(current_image)
+            red_matrix = np.array([[1.2, 0, 0],
+                                   [0, 0.8, 0],
+                                   [0, 0, 0.8]])
+            red_image = cv2.transform(image, red_matrix)
+            red_image = Image.fromarray(red_image.astype('uint8'))
+            update_image(red_image)
+            redo_history.clear()
+            update_btn_state()
+        else:
+            payment()
 
     def orange_filter():
         global image_tk, layer_ids, current_image
-        image = np.array(current_image)
-        orange_matrix = np.array([[0.9, 0.4, 0.0],
-                                  [0.4, 0.7, 0.0],
-                                  [0.0, 0.0, 0.7]])
-        red_image = cv2.transform(image, orange_matrix)
-        red_image = Image.fromarray(red_image.astype('uint8'))
-        update_image(red_image)
-        redo_history.clear()
-        update_btn_state()
+        if userversion == "Premium":
+            image = np.array(current_image)
+            orange_matrix = np.array([[0.9, 0.4, 0.0],
+                                      [0.4, 0.7, 0.0],
+                                      [0.0, 0.0, 0.7]])
+            red_image = cv2.transform(image, orange_matrix)
+            red_image = Image.fromarray(red_image.astype('uint8'))
+            update_image(red_image)
+            redo_history.clear()
+            update_btn_state()
+        else:
+            payment()
 
     def yellow_filter():
         global image_tk, layer_ids, current_image
-        image = np.array(current_image)
-        yellow_matrix = np.array([[0.7, 0.4, 0.0],
-                                  [0.4, 0.7, 0.0],
-                                  [0.0, 0.0, 0.5]])
-        red_image = cv2.transform(image, yellow_matrix)
-        red_image = Image.fromarray(red_image.astype('uint8'))
-        update_image(red_image)
-        redo_history.clear()
-        update_btn_state()
+        if userversion == "Premium":
+            image = np.array(current_image)
+            yellow_matrix = np.array([[0.7, 0.4, 0.0],
+                                      [0.4, 0.7, 0.0],
+                                      [0.0, 0.0, 0.5]])
+            red_image = cv2.transform(image, yellow_matrix)
+            red_image = Image.fromarray(red_image.astype('uint8'))
+            update_image(red_image)
+            redo_history.clear()
+            update_btn_state()
+        else:
+            payment()
 
     def green_filter():
         global image_tk, layer_ids, current_image
-        image = np.array(current_image)
-        green_matrix = np.array([[0.8, 0, 0],
-                                 [0, 1.2, 0],
-                                 [0, 0, 0.8]])
-        green_image = cv2.transform(image, green_matrix)
-        green_image = Image.fromarray(green_image.astype('uint8'))
-        update_image(green_image)
-        redo_history.clear()
-        update_btn_state()
+        if userversion == "Premium":
+            image = np.array(current_image)
+            green_matrix = np.array([[0.8, 0, 0],
+                                     [0, 1.2, 0],
+                                     [0, 0, 0.8]])
+            green_image = cv2.transform(image, green_matrix)
+            green_image = Image.fromarray(green_image.astype('uint8'))
+            update_image(green_image)
+            redo_history.clear()
+            update_btn_state()
+        else:
+            payment()
 
     def blue_filter():
         global image_tk, layer_ids, current_image
-        image = np.array(current_image)
-        blue_matrix = np.array([[0.8, 0, 0],
-                                [0, 0.8, 0],
-                                [0, 0, 1.2]])
-        blue_image = cv2.transform(image, blue_matrix)
-        blue_image = Image.fromarray(blue_image.astype('uint8'))
-        update_image(blue_image)
-        redo_history.clear()
-        update_btn_state()
+        if userversion == "Premium":
+            image = np.array(current_image)
+            blue_matrix = np.array([[0.8, 0, 0],
+                                    [0, 0.8, 0],
+                                    [0, 0, 1.2]])
+            blue_image = cv2.transform(image, blue_matrix)
+            blue_image = Image.fromarray(blue_image.astype('uint8'))
+            update_image(blue_image)
+            redo_history.clear()
+            update_btn_state()
+        else:
+            payment()
 
     def purple_filter():
         global image_tk, layer_ids, current_image
-        image = np.array(current_image)
-        purple_matrix = np.array([[0.6, 0.0, 0.5],
-                                  [0.0, 0.4, 0.6],
-                                  [0.6, 0.6, 0.8]])
-        red_image = cv2.transform(image, purple_matrix)
-        red_image = Image.fromarray(red_image.astype('uint8'))
-        update_image(red_image)
-        redo_history.clear()
-        update_btn_state()
+        if userversion == "Premium":
+            image = np.array(current_image)
+            purple_matrix = np.array([[0.6, 0.0, 0.5],
+                                      [0.0, 0.4, 0.6],
+                                      [0.6, 0.6, 0.8]])
+            red_image = cv2.transform(image, purple_matrix)
+            red_image = Image.fromarray(red_image.astype('uint8'))
+            update_image(red_image)
+            redo_history.clear()
+            update_btn_state()
+        else:
+            payment()
 
     def remove_background():
         global image_tk, layer_ids, current_image
@@ -667,29 +688,32 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
 
     def Non_Selected_Blur():
         global image, cursor
-        if crop_start_x is not None and crop_start_y is not None and crop_end_x is not None and crop_end_y is not None:
-            min_x = min(crop_start_x, crop_end_x)
-            max_x = max(crop_start_x, crop_end_x)
-            min_y = min(crop_start_y, crop_end_y)
-            max_y = max(crop_start_y, crop_end_y)
+        if userversion == "Premium":
+            if crop_start_x is not None and crop_start_y is not None and crop_end_x is not None and crop_end_y is not None:
+                min_x = min(crop_start_x, crop_end_x)
+                max_x = max(crop_start_x, crop_end_x)
+                min_y = min(crop_start_y, crop_end_y)
+                max_y = max(crop_start_y, crop_end_y)
 
-            min_x += x_offset
-            max_x += x_offset
-            min_y += y_offset
-            max_y += y_offset
+                min_x += x_offset
+                max_x += x_offset
+                min_y += y_offset
+                max_y += y_offset
 
-            # 영역 선택
-            x, y, width, height = min_x, min_y, max_x - min_x, max_y - min_y
+                # 영역 선택
+                x, y, width, height = min_x, min_y, max_x - min_x, max_y - min_y
 
-            image = np.array(current_image)
-            selected_region = image[y:y + height, x:x + width]
-            N_selected_region = cv2.blur(image, (50, 50))  # 블러(모자이크) 처리
-            N_selected_region[y:y + height, x:x + width] = selected_region  # 원본 이미지에 적용
-            image = Image.fromarray(N_selected_region)
-            update_image(image)
+                image = np.array(current_image)
+                selected_region = image[y:y + height, x:x + width]
+                N_selected_region = cv2.blur(image, (50, 50))  # 블러(모자이크) 처리
+                N_selected_region[y:y + height, x:x + width] = selected_region  # 원본 이미지에 적용
+                image = Image.fromarray(N_selected_region)
+                update_image(image)
 
-        redo_history.clear()
-        update_btn_state()
+                redo_history.clear()
+                update_btn_state()
+        else:
+            payment()
 
     # 소켓 생성
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -734,6 +758,10 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
     button2_frame = tk.Frame(win_main, width=345, height=710, background="white", highlightbackground="gray",
                              highlightthickness=2)
     button2_frame.place(x=1053, y=40)
+
+    # 로고 생성
+    logo_img = ImageTk.PhotoImage(resize_image(Image.open("icon/logo.png"), 100))
+    tk.Label(user_frame, image=logo_img, background="white").place(x=20, y=7)
 
     # 유저 정보 생성
     font_user = tkinter.font.Font(family="Tahoma", size=12, weight="bold")
@@ -795,23 +823,25 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
     create_title(button2_frame, "Filter", 263)
     create_line(button2_frame, 287)
     create_button(button2_frame, "icon//icon_grayscale.png", 250, grayscale, 25, 295)
-    create_button(button2_frame, "icon//icon_cannydege.png", 250, canny_edge, 25, 375)
+    create_button(button2_frame, "icon//icon_cannydege.png", 250, canny_edge, 25, 360)
 
-    create_title(button2_frame, "Color Palette", 400)
-    create_line(button2_frame, 424)
-    create_button(button2_frame, "icon//icon_red.png", 40, red_filter, 25, 435)
-    create_button(button2_frame, "icon//icon_orange.png", 40, orange_filter, 75, 435)
-    create_button(button2_frame, "icon//icon_yellow.png", 40, yellow_filter, 125, 435)
-    create_button(button2_frame, "icon//icon_green.png", 40, green_filter, 175, 435)
-    create_button(button2_frame, "icon//icon_blue.png", 40, blue_filter, 225, 435)
-    create_button(button2_frame, "icon//icon_purple.png", 40, purple_filter, 275, 435)
+    crown_img = ImageTk.PhotoImage(resize_image(Image.open("icon/icon_crown.png"), 25))
+    tk.Label(button2_frame, image=crown_img, background="white").place(x=120, y=440)
+    create_title(button2_frame, "Color Palette", 440)
+    create_line(button2_frame, 464)
+    create_button(button2_frame, "icon//icon_red.png", 40, red_filter, 25, 475)
+    create_button(button2_frame, "icon//icon_orange.png", 40, orange_filter, 75, 475)
+    create_button(button2_frame, "icon//icon_yellow.png", 40, yellow_filter, 125, 475)
+    create_button(button2_frame, "icon//icon_green.png", 40, green_filter, 175, 475)
+    create_button(button2_frame, "icon//icon_blue.png", 40, blue_filter, 225, 475)
+    create_button(button2_frame, "icon//icon_purple.png", 40, purple_filter, 275, 475)
 
-    create_title(button2_frame, "TempSave", 553)
-    create_line(button2_frame, 577)
+    create_title(button2_frame, "TempSave", 543)
+    create_line(button2_frame, 567)
     canvas_temp = tk.Canvas(button2_frame, width=100, height=100, bg="white", borderwidth=1, relief="solid")
-    canvas_temp.place(x=25, y=585)
-    create_button(button2_frame, "icon//icon_save.png", 80, temp_save, 140, 585)
-    create_button(button2_frame, "icon//icon_load.png", 80, temp_load, 230, 585)
+    canvas_temp.place(x=25, y=575)
+    create_button(button2_frame, "icon//icon_save.png", 80, temp_save, 140, 575)
+    create_button(button2_frame, "icon//icon_load.png", 80, temp_load, 230, 575)
 
     font_time = tkinter.font.Font(family="맑은 고딕", size=12)
     temp_time = tk.Label(button2_frame, text="", background="white", font=font_time)
