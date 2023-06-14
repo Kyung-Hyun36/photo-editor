@@ -603,6 +603,9 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
 
         update_image(zoom_image)
 
+        redo_history.clear()
+        update_btn_state()
+
     def red_filter():
         global image_tk, layer_ids, current_image
         if userversion == "Premium":
@@ -793,8 +796,8 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
     button2_frame.place(x=1053, y=40)
 
     # 로고 생성
-    logo_img = ImageTk.PhotoImage(resize_image(Image.open("icon/logo.png"), 100))
-    tk.Label(user_frame, image=logo_img, background="white").place(x=20, y=7)
+    logo_img = ImageTk.PhotoImage(resize_image(Image.open("icon/logo.png"), 150))
+    tk.Label(user_frame, image=logo_img, background="white").place(x=15, y=3)
 
     # 유저 정보 생성
     font_user = tkinter.font.Font(family="Tahoma", size=12, weight="bold")
@@ -832,10 +835,10 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
 
     create_title(button1_frame, "Blur", 363)
     create_line(button1_frame, 387)
-    create_button(button1_frame, "icon//icon_gaussian.png", 145, gaussian_blur, 25, 395)
-    create_button(button1_frame, "icon//icon_box.png", 145, box_blur, 185, 395)
-    create_button(button1_frame, "icon//icon_unbox.png", 145, unbox_blur, 25, 455)
-    create_button(button1_frame, "icon//icon_zoom.png", 145, zoom_blur, 185, 455)
+    create_button(button1_frame, "icon//icon_gaussian.png", 145, gaussian_blur, 20, 395)
+    create_button(button1_frame, "icon//icon_zoom.png", 145, zoom_blur, 170, 395)
+    create_button(button1_frame, "icon//icon_box.png", 153, box_blur, 20, 445)
+    create_button(button1_frame, "icon//icon_unbox.png", 153, unbox_blur, 170, 445)
 
     create_title(button1_frame, "Etc.", 513)
     create_line(button1_frame, 537)
