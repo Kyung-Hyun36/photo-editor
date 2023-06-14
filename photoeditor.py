@@ -141,14 +141,6 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
         canvas_width = canvas.winfo_width()
         canvas_height = canvas.winfo_height()
         image_captured = ImageGrab.grab((canvas_x, canvas_y, canvas_x + canvas_width, canvas_y + canvas_height))
-
-        # canvas_image = canvas.postscript(colormode="color")
-        # base64_encoded_image = base64.b64encode(canvas_image.encode()).decode("utf-8")
-        # print(base64_encoded_image)
-
-        # client_socket.sendto('save'.encode(), (HOST, PORT))
-        # client_socket.sendto(base64_encoded_image.encode(), (HOST, PORT))
-
         temp_time['text'] = kst_time
 
         temp_image = ImageTk.PhotoImage(resize_image(image_captured, 100))
@@ -156,8 +148,6 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
         canvas_temp.image = temp_image  # 이미지 객체를 캔버스의 속성으로 유지
 
     def temp_load():
-        # client_socket.sendto('save'.encode(), (HOST, PORT))
-        # image, address = client_socket.recvfrom(1024)
         update_image(image_captured)
         redo_history.clear()
         update_btn_state()
@@ -581,6 +571,38 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
         else:
             payment()
 
+    def zoom_blur():
+        global image_tk, layer_ids, current_image
+
+        # 필요한 매개변수 정의
+        blur = 0.01
+        iterations = 5
+
+        # 이미지의 크기와 중심점 구하기
+        h, w = current_image.size
+        center_x = w / 2
+        center_y = h / 2
+
+        # 확대와 축소를 위한 좌표 맵 생성
+        growMapx = np.tile(np.arange(h) + ((np.arange(h) - center_x) * blur), (w, 1)).astype(np.float32)
+        shrinkMapx = np.tile(np.arange(h) - ((np.arange(h) - center_x) * blur), (w, 1)).astype(np.float32)
+        growMapy = np.tile(np.arange(w) + ((np.arange(w) - center_y) * blur), (h, 1)).transpose().astype(np.float32)
+        shrinkMapy = np.tile(np.arange(w) - ((np.arange(w) - center_y) * blur), (h, 1)).transpose().astype(np.float32)
+
+        # Pillow 이미지를 NumPy 배열로 변환
+        current_image_np = np.array(current_image)
+
+        # 지정된 반복 횟수만큼 라디얼 블러 적용
+        for i in range(iterations):
+            tmp1 = cv2.remap(current_image_np, growMapx, growMapy, cv2.INTER_LINEAR)
+            tmp2 = cv2.remap(current_image_np, shrinkMapx, shrinkMapy, cv2.INTER_LINEAR)
+            current_image_np = cv2.addWeighted(tmp1, 0.5, tmp2, 0.5, 0)
+
+        # NumPy 배열을 Pillow 이미지로 변환
+        zoom_image = Image.fromarray(current_image_np.astype(np.uint8))
+
+        update_image(zoom_image)
+
     def red_filter():
         global image_tk, layer_ids, current_image
         if userversion == "Premium":
@@ -813,7 +835,7 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
     create_button(button1_frame, "icon//icon_gaussian.png", 145, gaussian_blur, 25, 395)
     create_button(button1_frame, "icon//icon_box.png", 145, box_blur, 185, 395)
     create_button(button1_frame, "icon//icon_unbox.png", 145, unbox_blur, 25, 455)
-    create_button(button1_frame, "icon//icon_zoom.png", 145, unbox_blur, 185, 455)
+    create_button(button1_frame, "icon//icon_zoom.png", 145, zoom_blur, 185, 455)
 
     create_title(button1_frame, "Etc.", 513)
     create_line(button1_frame, 537)
