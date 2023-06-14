@@ -9,6 +9,7 @@ import login
 import socket
 import urllib.request
 from datetime import datetime, timedelta
+import math
 
 HOST = "127.0.0.1"
 PORT = 12345
@@ -351,14 +352,28 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
         redo_history.clear()
         update_btn_state()
 
+    def rotate_image(image, angle):
+        # 회전된 이미지 크기 계산
+        rotated_image = image.rotate(angle, expand=True)
+
+        # 회전된 이미지를 모두 보여줄 수 있는 크기의 캔버스 생성
+        canvas_width = max(image.width, rotated_image.width)
+        canvas_height = max(image.height, rotated_image.height)
+        canvas_image = Image.new('RGBA', (canvas_width, canvas_height), (0, 0, 0, 0))
+
+        # 회전된 이미지를 중앙에 배치
+        offset_x = (canvas_width - rotated_image.width) // 2
+        offset_y = (canvas_height - rotated_image.height) // 2
+        canvas_image.paste(rotated_image, (offset_x, offset_y))
+
+        return canvas_image
+
     def rotate_90CCW():
         global image_tk, layer_ids, current_image
         # 현재 이미지 가져오기
         image = current_image
-
-        # 이미지 회전
         angle = 90
-        rotated_image = image.rotate(angle)
+        rotated_image = rotate_image(image, angle)
         update_image(rotated_image)
         redo_history.clear()
         update_btn_state()
@@ -370,7 +385,7 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
 
         # 이미지 회전
         angle = -90
-        rotated_image = image.rotate(angle)
+        rotated_image = rotate_image(image, angle)
         update_image(rotated_image)
         redo_history.clear()
         update_btn_state()
