@@ -500,7 +500,7 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
         redo_history.clear()
         update_btn_state()
 
-    def gaus_blur():
+    def gaussian_blur():
         global image_tk, layer_ids, current_image
         image = current_image
         Np_image = np.array(image)
@@ -510,8 +510,7 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
         redo_history.clear()
         update_btn_state()
 
-    def selected_blur():
-        global image, cursor
+    def box_blur():
         if userversion == "Premium":
             if crop_start_x is not None and crop_start_y is not None and crop_end_x is not None and crop_end_y is not None:
                 min_x = min(crop_start_x, crop_end_x)
@@ -532,6 +531,34 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
                 selected_region = cv2.blur(selected_region, (30, 30))  # 블러(모자이크) 처리
                 image[y:y + height, x:x + width] = selected_region  # 원본 이미지에 적용
                 image = Image.fromarray(image)
+                update_image(image)
+
+                redo_history.clear()
+                update_btn_state()
+        else:
+            payment()
+
+    def unbox_blur():
+        if userversion == "Premium":
+            if crop_start_x is not None and crop_start_y is not None and crop_end_x is not None and crop_end_y is not None:
+                min_x = min(crop_start_x, crop_end_x)
+                max_x = max(crop_start_x, crop_end_x)
+                min_y = min(crop_start_y, crop_end_y)
+                max_y = max(crop_start_y, crop_end_y)
+
+                min_x += x_offset
+                max_x += x_offset
+                min_y += y_offset
+                max_y += y_offset
+
+                # 영역 선택
+                x, y, width, height = min_x, min_y, max_x - min_x, max_y - min_y
+
+                image = np.array(current_image)
+                selected_region = image[y:y + height, x:x + width]
+                N_selected_region = cv2.blur(image, (50, 50))  # 블러(모자이크) 처리
+                N_selected_region[y:y + height, x:x + width] = selected_region  # 원본 이미지에 적용
+                image = Image.fromarray(N_selected_region)
                 update_image(image)
 
                 redo_history.clear()
@@ -684,36 +711,6 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
         tk.Label(root, width=41, height=1, background="gray").place(x=20, y=y)
         tk.Label(root, width=41, height=1, background="white").place(x=20, y=y + 2)
 
-
-    def Non_Selected_Blur():
-        global image, cursor
-        if userversion == "Premium":
-            if crop_start_x is not None and crop_start_y is not None and crop_end_x is not None and crop_end_y is not None:
-                min_x = min(crop_start_x, crop_end_x)
-                max_x = max(crop_start_x, crop_end_x)
-                min_y = min(crop_start_y, crop_end_y)
-                max_y = max(crop_start_y, crop_end_y)
-
-                min_x += x_offset
-                max_x += x_offset
-                min_y += y_offset
-                max_y += y_offset
-
-                # 영역 선택
-                x, y, width, height = min_x, min_y, max_x - min_x, max_y - min_y
-
-                image = np.array(current_image)
-                selected_region = image[y:y + height, x:x + width]
-                N_selected_region = cv2.blur(image, (50, 50))  # 블러(모자이크) 처리
-                N_selected_region[y:y + height, x:x + width] = selected_region  # 원본 이미지에 적용
-                image = Image.fromarray(N_selected_region)
-                update_image(image)
-
-                redo_history.clear()
-                update_btn_state()
-        else:
-            payment()
-
     # 소켓 생성
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -798,14 +795,15 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
 
     create_title(button1_frame, "Blur", 363)
     create_line(button1_frame, 387)
-    create_button(button1_frame, "icon//icon_blur.png", 90, gaus_blur, 25, 395)
-    create_button(button1_frame, "icon//icon_blur.png", 90, selected_blur, 125, 395)
-    create_button(button1_frame, "icon//icon_blur.png", 90, Non_Selected_Blur, 225, 395)
+    create_button(button1_frame, "icon//icon_gaussian.png", 145, gaussian_blur, 25, 395)
+    create_button(button1_frame, "icon//icon_box.png", 145, box_blur, 185, 395)
+    create_button(button1_frame, "icon//icon_unbox.png", 145, unbox_blur, 25, 455)
+    create_button(button1_frame, "icon//icon_zoom.png", 145, unbox_blur, 185, 455)
 
-    create_title(button1_frame, "Etc.", 493)
-    create_line(button1_frame, 517)
-    create_button(button1_frame, "icon//icon_removeBG.png", 90, remove_background, 25, 525)
-    create_button(button1_frame, "icon//icon_convert.png", 90, path_convert, 125, 525)
+    create_title(button1_frame, "Etc.", 513)
+    create_line(button1_frame, 537)
+    create_button(button1_frame, "icon//icon_removeBG.png", 90, remove_background, 25, 545)
+    create_button(button1_frame, "icon//icon_convert.png", 90, path_convert, 125, 545)
 
     create_title(button2_frame, "Undo & Redo", 3)
     create_line(button2_frame, 27)
