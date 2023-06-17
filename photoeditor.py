@@ -838,11 +838,12 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
     create_button(button1_frame, "icon//icon_zoom.png", 145, zoom_blur, 170, 395)
     create_button(button1_frame, "icon//icon_box.png", 153, box_blur, 20, 445)
     create_button(button1_frame, "icon//icon_unbox.png", 153, unbox_blur, 170, 445)
+    create_button(button1_frame, "icon//icon_pointzoom.png", 160, unbox_blur, 20, 505)
 
-    create_title(button1_frame, "Etc.", 513)
-    create_line(button1_frame, 537)
-    create_button(button1_frame, "icon//icon_removeBG.png", 90, remove_background, 25, 545)
-    create_button(button1_frame, "icon//icon_convert.png", 90, path_convert, 125, 545)
+    create_title(button1_frame, "Etc.", 553)
+    create_line(button1_frame, 577)
+    create_button(button1_frame, "icon//icon_remove.png", 90, remove_background, 25, 585)
+    create_button(button1_frame, "icon//icon_convert.png", 89, path_convert, 125, 585)
 
     create_title(button2_frame, "Undo & Redo", 3)
     create_line(button2_frame, 27)
