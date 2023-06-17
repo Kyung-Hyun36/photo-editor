@@ -54,19 +54,6 @@ def handle_update(client_socket, client_address):
     client_socket.sendto(msg.encode(), client_address)
 
 
-
-def handle_save(client_socket, client_address):
-    # 사용자명과 이미지 수신
-    # username, address = client_socket.recvfrom(1024)
-    image, address = client_socket.recvfrom(1024)
-    # image_name, address = client_socket.recvfrom(1024)
-    image_data.append(image.decode())
-
-
-def handle_load(client_socket, client_address):
-    client_socket.sendto(image_data.encode(), client_address)
-
-
 # 소켓 생성
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -82,10 +69,6 @@ while True:
         handle_login(server_socket, client_address)
     elif request.decode() == 'update':
         handle_update(server_socket, client_address)
-    elif request.decode() == "save":
-        handle_save(server_socket, client_address)
-    elif request.decode() == "load":
-        handle_load(server_socket, client_address)
     elif request.decode() == "exit":
         break
 

@@ -343,6 +343,55 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
         else:
             messagebox.showinfo("information", "영역을 먼저 지정해주세요.")
 
+    def img_add():
+        global image_tk, layer_ids, current_image, crop_start_x, crop_start_y, crop_end_x, crop_end_y, Adding_image, Add_resized_image
+        if crop_start_x is not None and crop_start_y is not None and crop_end_x is not None and crop_end_y is not None:
+            min_x = min(crop_start_x, crop_end_x)
+            max_x = max(crop_start_x, crop_end_x)
+            min_y = min(crop_start_y, crop_end_y)
+            max_y = max(crop_start_y, crop_end_y)
+
+            min_x += x_offset
+            max_x += x_offset
+            min_y += y_offset
+            max_y += y_offset
+
+            # 이미지 파일 선택 대화상자 열기
+            file_path = filedialog.askopenfilename(
+                title="이미지 파일 선택",
+                filetypes=(("JPG 파일", "*.jpg"), ("PNG 파일", "*.png"))
+            )
+
+            # 영역 선택
+            x, y, w, h = min_x, min_y, max_x - min_x, max_y - min_y
+            A_size_x = w
+            A_size_y = h
+
+            if file_path:
+                # 이미지 불러오기
+                image_path = file_path
+                Adding_image = Image.open(image_path)
+
+                if A_size_x < A_size_y:
+                    Add_resized_image = resize_image(Adding_image, A_size_x)
+                else:
+                    Add_resized_image = resize_image(Adding_image, A_size_y)
+                np_ADD = np.array(Add_resized_image)
+                np_Current = np.array(current_image)
+
+                h, w, channels = np.shape(Add_resized_image)
+
+                np_Current[y:y + h, x:x + w] = np_ADD
+                image = Image.fromarray(np_Current)
+                update_image(image)
+
+                file_path = None
+
+                redo_history.clear()
+                update_btn_state()
+        else:
+            messagebox.showinfo("information", "영역을 먼저 지정해주세요.")
+
     def rotate_image(image, angle):
         # 회전된 이미지 크기 계산
         rotated_image = image.rotate(angle, expand=True)
@@ -851,7 +900,7 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
 
     # 로고 생성
     logo_img = ImageTk.PhotoImage(resize_image(Image.open("icon/logo.png"), 150))
-    tk.Label(user_frame, image=logo_img, background="white").place(x=15, y=3)
+    tk.Label(user_frame, image=logo_img, background="white").place(x=15, y=0)
 
     # 유저 정보 생성
     font_user = tkinter.font.Font(family="Tahoma", size=12, weight="bold")
@@ -909,7 +958,7 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
 
     create_title(button2_frame, "Add & Crop", 133)
     create_line(button2_frame, 157)
-    create_button(button2_frame, "icon//icon_add.png", 90, undo, 25, 165)
+    create_button(button2_frame, "icon//icon_add.png", 90, img_add, 25, 165)
     create_button(button2_frame, "icon//icon_crop.png", 90, image_crop, 125, 165)
 
     create_title(button2_frame, "Filter", 263)
