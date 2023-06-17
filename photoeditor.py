@@ -337,9 +337,11 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
             cropped_image = current_image.crop((min_x, min_y, max_x, max_y))
             update_image(cropped_image)
 
-        canvas.delete("rectangle")
-        redo_history.clear()
-        update_btn_state()
+            canvas.delete("rectangle")
+            redo_history.clear()
+            update_btn_state()
+        else:
+            messagebox.showinfo("information", "영역을 먼저 지정해주세요.")
 
     def rotate_image(image, angle):
         # 회전된 이미지 크기 계산
@@ -406,15 +408,18 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
     def rotate_user():
         global image_tk, layer_ids, current_image
         if userversion == "Premium":
-            # 현재 이미지 가져오기
-            image = current_image
+            if angle_entry.get():
+                # 현재 이미지 가져오기
+                image = current_image
 
-            # 이미지 회전
-            angle = int(angle_entry.get())
-            rotated_image = image.rotate(-angle)
-            update_image(rotated_image)
-            redo_history.clear()
-            update_btn_state()
+                # 이미지 회전
+                angle = int(angle_entry.get())
+                rotated_image = image.rotate(-angle)
+                update_image(rotated_image)
+                redo_history.clear()
+                update_btn_state()
+            else:
+                messagebox.showinfo("information", "각도를 먼저 입력해주세요.")
         else:
             payment()
 
@@ -539,6 +544,8 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
 
                 redo_history.clear()
                 update_btn_state()
+            else:
+                messagebox.showinfo("information", "영역을 먼저 지정해주세요.")
         else:
             payment()
 
@@ -567,6 +574,8 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
 
                 redo_history.clear()
                 update_btn_state()
+            else:
+                messagebox.showinfo("information", "영역을 먼저 지정해주세요.")
         else:
             payment()
 
@@ -646,6 +655,10 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
 
                 redo_history.clear()
                 update_btn_state()
+            else:
+                messagebox.showinfo("information", "영역을 먼저 지정해주세요.")
+        else:
+            payment()
 
     def red_filter():
         global image_tk, layer_ids, current_image
@@ -865,8 +878,8 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
     create_button(button1_frame, "icon//icon_rotate45CCW.png", 90, rotate_45CCW, 125, 35)
     create_button(button1_frame, "icon//icon_rotate90CW.png", 90, rotate_90CW, 25, 135)
     create_button(button1_frame, "icon//icon_rotate90CCW.png", 90, rotate_90CCW, 125, 135)
-    create_button(button1_frame, "icon//icon_rotateuser.png", 95, rotate_user, 225, 75)
-    angle_entry = Entry(button1_frame, width=10, background="gray")
+    create_button(button1_frame, "icon//icon_rotateuser.png", 95, rotate_user, 227, 75)
+    angle_entry = Entry(button1_frame, width=10, background="white")
     angle_entry.place(x=233, y=180)
 
     create_title(button1_frame, "Adjust Brightness", 233)
