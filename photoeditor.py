@@ -605,6 +605,48 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
         redo_history.clear()
         update_btn_state()
 
+    def box_zoom_blur():
+        global image_tk, layer_ids, current_image, crop_start_x, crop_start_y, crop_end_x, crop_end_y
+        if userversion == "Premium":
+            if crop_start_x is not None and crop_start_y is not None and crop_end_x is not None and crop_end_y is not None:
+                # 필요한 매개변수 정의
+                blur = 0.01
+                iterations = 5
+
+                # 선택 영역의 중심점 계산
+                center_x = (crop_start_x + crop_end_x) // 2
+                center_y = (crop_start_y + crop_end_y) // 2
+
+                # 이미지의 크기와 중심점 구하기
+                image_width, image_height = current_image.size
+
+                # 확대와 축소를 위한 좌표 맵 생성
+                growMapx = np.tile(np.arange(image_width) + ((np.arange(image_width) - center_x) * blur),
+                                   (image_height, 1)).astype(np.float32)
+                shrinkMapx = np.tile(np.arange(image_width) - ((np.arange(image_width) - center_x) * blur),
+                                     (image_height, 1)).astype(np.float32)
+                growMapy = np.tile(np.arange(image_height) + ((np.arange(image_height) - center_y) * blur),
+                                   (image_width, 1)).transpose().astype(np.float32)
+                shrinkMapy = np.tile(np.arange(image_height) - ((np.arange(image_height) - center_y) * blur),
+                                     (image_width, 1)).transpose().astype(np.float32)
+
+                # Pillow 이미지를 NumPy 배열로 변환
+                current_image_np = np.array(current_image)
+
+                # 지정된 반복 횟수만큼 라디얼 블러 적용
+                for i in range(iterations):
+                    tmp1 = cv2.remap(current_image_np, growMapx, growMapy, cv2.INTER_LINEAR)
+                    tmp2 = cv2.remap(current_image_np, shrinkMapx, shrinkMapy, cv2.INTER_LINEAR)
+                    current_image_np = cv2.addWeighted(tmp1, 0.5, tmp2, 0.5, 0)
+
+                # NumPy 배열을 Pillow 이미지로 변환
+                zoom_image = Image.fromarray(current_image_np.astype(np.uint8))
+
+                update_image(zoom_image)
+
+                redo_history.clear()
+                update_btn_state()
+
     def red_filter():
         global image_tk, layer_ids, current_image
         if userversion == "Premium":
@@ -836,14 +878,14 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
     create_line(button1_frame, 387)
     create_button(button1_frame, "icon//icon_gaussian.png", 145, gaussian_blur, 20, 395)
     create_button(button1_frame, "icon//icon_zoom.png", 145, zoom_blur, 170, 395)
-    create_button(button1_frame, "icon//icon_box.png", 153, box_blur, 20, 445)
-    create_button(button1_frame, "icon//icon_unbox.png", 153, unbox_blur, 170, 445)
-    create_button(button1_frame, "icon//icon_pointzoom.png", 160, unbox_blur, 20, 505)
+    create_button(button1_frame, "icon//icon_box.png", 153, box_blur, 20, 442)
+    create_button(button1_frame, "icon//icon_unbox.png", 153, unbox_blur, 170, 442)
+    create_button(button1_frame, "icon//icon_pointzoom.png", 190, box_zoom_blur, 20, 498)
 
-    create_title(button1_frame, "Etc.", 553)
-    create_line(button1_frame, 577)
-    create_button(button1_frame, "icon//icon_remove.png", 90, remove_background, 25, 585)
-    create_button(button1_frame, "icon//icon_convert.png", 89, path_convert, 125, 585)
+    create_title(button1_frame, "Etc.", 563)
+    create_line(button1_frame, 587)
+    create_button(button1_frame, "icon//icon_remove.png", 90, remove_background, 25, 595)
+    create_button(button1_frame, "icon//icon_convert.png", 89, path_convert, 125, 595)
 
     create_title(button2_frame, "Undo & Redo", 3)
     create_line(button2_frame, 27)
