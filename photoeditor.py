@@ -9,6 +9,7 @@ import login
 import socket
 import urllib.request
 from datetime import datetime, timedelta
+import math
 
 HOST = "127.0.0.1"
 PORT = 12345
@@ -398,19 +399,37 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
         else:
             messagebox.showinfo("information", "영역을 먼저 지정해주세요.")
 
-    def rotate_image(image, angle):
-        # 회전된 이미지 크기 계산
+    def rotate_image(image, angle, canvas_size=(700, 700)):
+        # 이미지 회전
         rotated_image = image.rotate(angle, expand=True)
 
-        # 회전된 이미지를 모두 보여줄 수 있는 크기의 캔버스 생성
-        canvas_width = max(image.width, rotated_image.width)
-        canvas_height = max(image.height, rotated_image.height)
-        canvas_image = Image.new('RGBA', (canvas_width, canvas_height), (0, 0, 0, 0))
+        # 이미지의 가로와 세로 비율 계산
+        img_width, img_height = rotated_image.size
+        img_ratio = img_width / img_height
 
-        # 회전된 이미지를 중앙에 배치
-        offset_x = (canvas_width - rotated_image.width) // 2
-        offset_y = (canvas_height - rotated_image.height) // 2
-        canvas_image.paste(rotated_image, (offset_x, offset_y))
+        # 캔버스의 가로와 세로 비율 계산
+        canvas_width, canvas_height = canvas_size
+        canvas_ratio = canvas_width / canvas_height
+
+        # 이미지를 캔버스에 맞도록 크기 조정
+        if img_ratio > canvas_ratio:
+            # 이미지의 가로가 더 긴 경우
+            new_width = canvas_width
+            new_height = int(new_width / img_ratio)
+        else:
+            # 이미지의 세로가 더 긴 경우
+            new_height = canvas_height
+            new_width = int(new_height * img_ratio)
+
+        resized_image = rotated_image.resize((new_width, new_height))
+
+        # 캔버스 생성
+        canvas_image = Image.new('RGBA', canvas_size, (0, 0, 0, 0))
+
+        # 이미지를 캔버스의 중앙에 배치
+        offset_x = (canvas_width - new_width) // 2
+        offset_y = (canvas_height - new_height) // 2
+        canvas_image.paste(resized_image, (offset_x, offset_y))
 
         return canvas_image
 
