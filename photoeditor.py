@@ -128,28 +128,34 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
             btn_redo['state'] = DISABLED
 
     def temp_save():
-        global image_captured
-        url = 'https://www.google.com/'
-        page = urllib.request.urlopen(url)
-        utc_time = datetime.strptime(page.headers['Date'], '%a, %d %b %Y %H:%M:%S %Z')
-        kst_time = utc_time + timedelta(hours=9)
+        if userversion == "Premium":
+            global image_captured
+            url = 'https://www.google.com/'
+            page = urllib.request.urlopen(url)
+            utc_time = datetime.strptime(page.headers['Date'], '%a, %d %b %Y %H:%M:%S %Z')
+            kst_time = utc_time + timedelta(hours=9)
 
-        # canvas의 이미지 캡쳐
-        canvas_x = canvas.winfo_rootx()
-        canvas_y = canvas.winfo_rooty()
-        canvas_width = canvas.winfo_width()
-        canvas_height = canvas.winfo_height()
-        image_captured = ImageGrab.grab((canvas_x, canvas_y, canvas_x + canvas_width, canvas_y + canvas_height))
-        temp_time['text'] = kst_time
+            # canvas의 이미지 캡쳐
+            canvas_x = canvas.winfo_rootx()
+            canvas_y = canvas.winfo_rooty()
+            canvas_width = canvas.winfo_width()
+            canvas_height = canvas.winfo_height()
+            image_captured = ImageGrab.grab((canvas_x, canvas_y, canvas_x + canvas_width, canvas_y + canvas_height))
+            temp_time['text'] = kst_time
 
-        temp_image = ImageTk.PhotoImage(resize_image(image_captured, 100))
-        canvas_temp.create_image(0, 0, anchor="nw", image=temp_image)
-        canvas_temp.image = temp_image  # 이미지 객체를 캔버스의 속성으로 유지
+            temp_image = ImageTk.PhotoImage(resize_image(image_captured, 100))
+            canvas_temp.create_image(0, 0, anchor="nw", image=temp_image)
+            canvas_temp.image = temp_image  # 이미지 객체를 캔버스의 속성으로 유지
+        else:
+            payment()
 
     def temp_load():
-        update_image(image_captured)
-        redo_history.clear()
-        update_btn_state()
+        if userversion == "Premium":
+            update_image(image_captured)
+            redo_history.clear()
+            update_btn_state()
+        else:
+            payment()
 
     def resize_image(image, max_size):
         # 프레임 크기에 맞게 이미지 사이즈 재조정
@@ -977,6 +983,7 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
     create_button(button2_frame, "icon//icon_blue.png", 40, blue_filter, 225, 475)
     create_button(button2_frame, "icon//icon_purple.png", 40, purple_filter, 275, 475)
 
+    tk.Label(button2_frame, image=crown_img, background="white").place(x=100, y=543)
     create_title(button2_frame, "TempSave", 543)
     create_line(button2_frame, 567)
     canvas_temp = tk.Canvas(button2_frame, width=100, height=100, bg="white", borderwidth=1, relief="solid")
