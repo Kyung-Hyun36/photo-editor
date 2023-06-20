@@ -48,7 +48,7 @@ def loginmain():
                     userversion = "Free"
                 open_photoeditor(userid, username.decode(), userversion)
             else:
-                messagebox.showwarning(response.decode(), "아이디와 비밀번호를 확인해 주세요.")
+                messagebox.showwarning(response.decode(), "아이디 또는 비밀번호를 확인해 주세요.")
 
     # 소켓 생성
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
