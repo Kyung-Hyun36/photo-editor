@@ -555,10 +555,12 @@ def photoeditormain(id="admin", name="관리자", version="Premium"):
             # 파일 경로에서 .png 제거 후 .jpg 추가
             convert_path = image_path.rsplit('.', 1)[0] + '.jpg'
             convert = 1
+            messagebox.showinfo("확장자 변환", "\".jpg\"로 변환되었습니다.")
         elif file_format == "jpg":
             # 파일 경로에서 .jpg 제거 후 .png 추가
             convert_path = image_path.rsplit('.', 1)[0] + '.png'
             convert = 1
+            messagebox.showinfo("확장자 변환", "\".png\"로 변환되었습니다.")
 
     def grayscale():
         global image_tk, layer_ids, current_image
