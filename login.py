@@ -21,29 +21,34 @@ def loginmain():
         photoeditor.photoeditormain(userid, username, userversion)
 
     def login():
-        # 서버에 로그인 요청 전송
-        client_socket.sendto('login'.encode(), (HOST, PORT))
-
         userid = entry_id.get()
         password = entry_password.get()
 
-        # 아이디와 비밀번호 전송
-        client_socket.sendto(userid.encode(), (HOST, PORT))
-        client_socket.sendto(password.encode(), (HOST, PORT))
-
-        # 서버로부터 응답 수신
-        response, server_address = client_socket.recvfrom(1024)
-        if response.decode() == "로그인 성공":
-            messagebox.showinfo(response.decode(), response.decode())
-            username, server_address = client_socket.recvfrom(1024)
-            userversion, server_address = client_socket.recvfrom(1024)
-            if userversion.decode() == "2":
-                userversion = "Premium"
-            else:
-                userversion = "Free"
-            open_photoeditor(userid, username.decode(), userversion)
+        if userid == "":
+            messagebox.showwarning("로그인 실패", "아이디를 입력해 주세요.")
+        elif password == "":
+            messagebox.showwarning("로그인 실패", "비밀번호를 입력해 주세요.")
         else:
-            messagebox.showwarning(response.decode(), "아이디와 비밀번호를 확인해 주세요.")
+            # 서버에 로그인 요청 전송
+            client_socket.sendto('login'.encode(), (HOST, PORT))
+
+            # 아이디와 비밀번호 전송
+            client_socket.sendto(userid.encode(), (HOST, PORT))
+            client_socket.sendto(password.encode(), (HOST, PORT))
+
+            # 서버로부터 응답 수신
+            response, server_address = client_socket.recvfrom(1024)
+            if response.decode() == "로그인 성공":
+                messagebox.showinfo(response.decode(), response.decode())
+                username, server_address = client_socket.recvfrom(1024)
+                userversion, server_address = client_socket.recvfrom(1024)
+                if userversion.decode() == "2":
+                    userversion = "Premium"
+                else:
+                    userversion = "Free"
+                open_photoeditor(userid, username.decode(), userversion)
+            else:
+                messagebox.showwarning(response.decode(), "아이디와 비밀번호를 확인해 주세요.")
 
     # 소켓 생성
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
